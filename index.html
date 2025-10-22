@@ -18,6 +18,12 @@ h1 { text-align:center; color:#333; }
 .refreshNote { text-align:center; color:#777; font-size:14px; margin-top:10px; }
 .selected { border:2px solid #4CAF50; box-shadow:0 0 10px #4CAF50; }
 #mainPlayBtn { position:fixed; bottom:20px; right:20px; background:#4CAF50; color:white; border:none; border-radius:50%; width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 8px rgba(0,0,0,0.3); cursor:pointer; }
+.headline-link {
+  text-decoration: none;
+  color: #007BFF;
+  font-weight: bold;
+}
+.headline-link:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -68,12 +74,13 @@ async function fetchSheet() {
         );
 
         itemsHTML += `
-          <div class="item card">
-            <div class="name">${d.name}</div>
-            <div class="headline">${d.msg}</div>
-            <div class="link">${clickableLink}</div>
-          </div>
-        `;
+  <div class="item card">
+    <div class="name">
+      <a href="${d.msg}" target="_blank" class="headline-link">${d.name}</a>
+    </div>
+    <div class="headline">${d.msgTitle || d.msg}</div>
+  </div>
+`;
       });
 
       groupDiv.innerHTML = `<h2>${date}</h2>${itemsHTML}`;
@@ -106,6 +113,7 @@ document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
   window.speechSynthesis.speak(textToRead);
 });
 */
+  /*
   document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
   if(!selectedCard){
     alert("Please select a card first!");
@@ -128,6 +136,37 @@ document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
   utter.rate = 1;       // speed
   utter.pitch = 1;      // pitch
   window.speechSynthesis.speak(utter);
+});
+  */
+  const mainPlayBtn = document.getElementById("mainPlayBtn");
+
+mainPlayBtn.addEventListener("click", ()=>{
+  if(!selectedCard){
+    alert("Please select a card first!");
+    return;
+  }
+
+  // Agar speech chal rahi hai → stop kar do
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    mainPlayBtn.innerText = "▶️"; // icon back to play
+    return;
+  }
+
+  // Naya speech play karna
+  const textToRead = selectedCard.querySelector(".headline")?.innerText.trim();
+  if(!textToRead) return;
+
+  const utter = new SpeechSynthesisUtterance(textToRead);
+  utter.lang = "hi-IN";
+
+  // Speech khatam hone par button icon wapas play me
+  utter.onend = () => {
+    mainPlayBtn.innerText = "▶️";
+  }
+
+  window.speechSynthesis.speak(utter);
+  mainPlayBtn.innerText = "⏹️"; // icon to stop
 });
 // First load
 fetchSheet();
