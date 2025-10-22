@@ -102,13 +102,21 @@ async function fetchSheet() {
 
       let itemsHTML = "";
       grouped[date].forEach(d => {
-        itemsHTML += `
-          <div class="item">
-            <div class="name">${d.name}</div>
-            <div class="message">${d.msg}</div>
-          </div>
-        `;
-      });
+    // Column 3 (Link) ko clickable banate hue
+    const rawLink = d.msg; // Column 3 = msg
+    const clickableLink = rawLink.replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank">$1</a>'
+    );
+
+    itemsHTML += `
+      <div class="item card"> <!-- card class for selection -->
+        <div class="name">${d.name}</div>
+        <div class="headline">${d.msg}</div>
+        <div class="link">${clickableLink}</div>
+      </div>
+    `;
+});
 
       groupDiv.innerHTML = `<h2>${date}</h2>${itemsHTML}`;
       container.appendChild(groupDiv);
@@ -118,15 +126,7 @@ async function fetchSheet() {
     console.error("Error fetching sheet:", err);
   }
 }
-  const rawLink = r.c[2]?.v || "";
-const clickableLink = rawLink.replace(
-  /(https?:\/\/[^\s]+)/g,
-  '<a href="$1" target="_blank">$1</a>'
-);
-  div.innerHTML = `
-  <div class="headline">${headline}</div>
-  <div class="link">${clickableLink}</div>
-`;
+  
   let selectedCard = null;
 
 // card click पर selection logic
