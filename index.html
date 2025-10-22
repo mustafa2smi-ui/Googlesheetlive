@@ -212,6 +212,7 @@ mainPlayBtn.addEventListener("click", ()=>{
   mainPlayBtn.innerText = "⏹️"; // icon to stop
 });
   */
+  /*
   const mainPlayBtn = document.getElementById("mainPlayBtn");
 
 mainPlayBtn.addEventListener("click", ()=>{
@@ -238,6 +239,51 @@ mainPlayBtn.addEventListener("click", ()=>{
 
   window.speechSynthesis.speak(utter);
   mainPlayBtn.innerText = "⏹️";
+});
+  */
+    const mainPlayBtn = document.getElementById("mainPlayBtn");
+
+mainPlayBtn.addEventListener("click", ()=>{
+  if(!selectedCard){
+    alert("Please select a card first!");
+    return;
+  }
+
+  // Stop any ongoing speech
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    mainPlayBtn.innerText = "▶️";
+    return;
+  }
+
+  // Get all text inside selected card
+  const lines = selectedCard.querySelectorAll(".name");
+  const texts = Array.from(lines).map(l => l.innerText.trim()).filter(t => t);
+
+  if(texts.length === 0){
+    alert("Nothing to read!");
+    return;
+  }
+
+  mainPlayBtn.innerText = "⏹️";
+
+  // Function to read lines sequentially
+  let i = 0;
+  const speakNext = () => {
+    if(i >= texts.length){
+      mainPlayBtn.innerText = "▶️";
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(texts[i]);
+    utter.lang = "hi-IN";
+    utter.onend = () => {
+      i++;
+      speakNext();
+    };
+    window.speechSynthesis.speak(utter);
+  }
+
+  speakNext(); // start reading
 });
 // First load
 fetchSheet();
