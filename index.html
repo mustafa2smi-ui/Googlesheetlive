@@ -4,62 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>📅 Date-wise Google Sheet Data</title>
-  <button id="mainPlayBtn" title="Play Selected">▶️</button>
 <style>
-body {
-  font-family: "Segoe UI", sans-serif;
-  background: #f4f6f8;
-  margin: 0;
-  padding: 20px;
-}
-h1 { text-align: center; color: #333; }
-
-.group {
-  background: white;
-  border-radius: 12px;
-  margin: 15px auto;
-  padding: 10px 15px;
-  max-width: 500px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-.group h2 {
-  margin: 0 0 10px;
-  color: #007BFF;
-  border-bottom: 2px solid #007BFF;
-  padding-bottom: 4px;
-}
-.item {
-  border-bottom: 1px dashed #ccc;
-  padding: 6px 0;
-}
-.item:last-child { border-bottom: none; }
-.name { font-weight: bold; color: #222; }
-.message { color: #555; }
-.refreshNote {
-  text-align: center;
-  color: #777;
-  font-size: 14px;
-  margin-top: 10px;
-}
-  .selected {
-  border: 2px solid #4CAF50;
-  box-shadow: 0 0 10px #4CAF50;
-}
-#mainplayBtn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #4CAF50;
-  color: white;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
+body { font-family: "Segoe UI", sans-serif; background: #f4f6f8; margin:0; padding:20px; }
+h1 { text-align:center; color:#333; }
+.group { background:white; border-radius:12px; margin:15px auto; padding:10px 15px; max-width:500px; box-shadow:0 0 8px rgba(0,0,0,0.1); }
+.group h2 { margin:0 0 10px; color:#007BFF; border-bottom:2px solid #007BFF; padding-bottom:4px; }
+.item { border-bottom:1px dashed #ccc; padding:6px 0; cursor:pointer; }
+.item:last-child { border-bottom:none; }
+.name { font-weight:bold; color:#222; }
+.headline { color:#555; }
+.link a { color:#007BFF; text-decoration:none; }
+.link a:hover { text-decoration:underline; }
+.refreshNote { text-align:center; color:#777; font-size:14px; margin-top:10px; }
+.selected { border:2px solid #4CAF50; box-shadow:0 0 10px #4CAF50; }
+#mainPlayBtn { position:fixed; bottom:20px; right:20px; background:#4CAF50; color:white; border:none; border-radius:50%; width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-size:24px; box-shadow:0 4px 8px rgba(0,0,0,0.3); cursor:pointer; }
 </style>
 </head>
 <body>
@@ -67,32 +25,33 @@ h1 { text-align: center; color: #333; }
 <div id="dataContainer">Loading...</div>
 <p class="refreshNote">Auto-refreshes every 15 seconds</p>
 
+<!-- Floating Play Button -->
+<button id="mainPlayBtn" title="Play Selected">▶️</button>
+
 <script>
- 
 const sheetURL = "https://docs.google.com/spreadsheets/d/1DtRlkaP23ihYmN8mn4Gx7deLicpVhDY6AiY-bN5pqt8/gviz/tq?tqx=out:json";
+
+let selectedCard = null;
 
 async function fetchSheet() {
   try {
     const res = await fetch(sheetURL);
     const text = await res.text();
-    const json = JSON.parse(text.substr(47).slice(0, -2)); // remove junk JSON wrapper
+    const json = JSON.parse(text.substr(47).slice(0, -2));
     const rows = json.table.rows;
 
-    // Convert to structured array
     const data = rows.map(r => ({
       date: r.c[0]?.v || "",
       name: r.c[1]?.v || "",
       msg: r.c[2]?.v || ""
     }));
 
-    // Group by date
     const grouped = {};
     data.forEach(item => {
       if (!grouped[item.date]) grouped[item.date] = [];
       grouped[item.date].push(item);
     });
 
-    // Display
     const container = document.getElementById("dataContainer");
     container.innerHTML = "";
 
@@ -102,42 +61,41 @@ async function fetchSheet() {
 
       let itemsHTML = "";
       grouped[date].forEach(d => {
-    // Column 3 (Link) ko clickable banate hue
-    const rawLink = d.msg; // Column 3 = msg
-    const clickableLink = rawLink.replace(
-        /(https?:\/\/[^\s]+)/g,
-        '<a href="$1" target="_blank">$1</a>'
-    );
+        const rawLink = d.msg;
+        const clickableLink = rawLink.replace(
+          /(https?:\/\/[^\s]+)/g,
+          '<a href="$1" target="_blank">$1</a>'
+        );
 
-    itemsHTML += `
-      <div class="item card"> <!-- card class for selection -->
-        <div class="name">${d.name}</div>
-        <div class="headline">${d.msg}</div>
-        <div class="link">${clickableLink}</div>
-      </div>
-    `;
-});
+        itemsHTML += `
+          <div class="item card">
+            <div class="name">${d.name}</div>
+            <div class="headline">${d.msg}</div>
+            <div class="link">${clickableLink}</div>
+          </div>
+        `;
+      });
 
       groupDiv.innerHTML = `<h2>${date}</h2>${itemsHTML}`;
       container.appendChild(groupDiv);
+    });
+
+    // Attach click listeners after DOM update
+    document.querySelectorAll(".card").forEach(card => {
+      card.addEventListener("click", ()=>{
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedCard = card;
+      });
     });
 
   } catch (err) {
     console.error("Error fetching sheet:", err);
   }
 }
-  
-  let selectedCard = null;
 
-// card click पर selection logic
-card.addEventListener("click", ()=>{
-  document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
-  card.classList.add("selected");
-  selectedCard = card;
-});
-
-// floating play button click logic
-document.getElementById("mainplayBtn").addEventListener("click", ()=>{
+// Floating Play Button
+document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
   if(!selectedCard){
     alert("Please select a card first!");
     return;
@@ -145,13 +103,12 @@ document.getElementById("mainplayBtn").addEventListener("click", ()=>{
   const textToRead = selectedCard.querySelector(".headline").innerText;
   const speech = new SpeechSynthesisUtterance(textToRead);
   speech.lang = "hi-IN";
-  window.speechSynthesis.speak(speech);
+  window.speechSynthesis.speak(textToRead);
 });
 
-// पहली बार load
+// First load
 fetchSheet();
-
-// हर 15 सेकंड बाद auto-refresh
+// Auto-refresh every 15 sec
 setInterval(fetchSheet, 15000);
 </script>
 </body>
