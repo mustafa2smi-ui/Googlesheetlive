@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 Date-wise Google Sheet Data</title>
+<style>
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+h1 { text-align: center; color: #333; }
+
+.group {
+  background: white;
+  border-radius: 12px;
+  margin: 15px auto;
+  padding: 10px 15px;
+  max-width: 500px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+.group h2 {
+  margin: 0 0 10px;
+  color: #007BFF;
+  border-bottom: 2px solid #007BFF;
+  padding-bottom: 4px;
+}
+.item {
+  border-bottom: 1px dashed #ccc;
+  padding: 6px 0;
+}
+.item:last-child { border-bottom: none; }
+.name { font-weight: bold; color: #222; }
+.message { color: #555; }
+.refreshNote {
+  text-align: center;
+  color: #777;
+  font-size: 14px;
+  margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
+<div id="dataContainer">Loading...</div>
+<p class="refreshNote">Auto-refreshes every 15 seconds</p>
+
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/gviz/tq?tqx=out:json";
+
+async function fetchSheet() {
+  try {
+    const res = await fetch(sheetURL);
+    const text = await res.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2)); // remove junk JSON wrapper
+    const rows = json.table.rows;
+
+    // Convert to structured array
+    const data = rows.map(r => ({
+      date: r.c[0]?.v || "",
+      name: r.c[1]?.v || "",
+      msg: r.c[2]?.v || ""
+    }));
+
+    // Group by date
+    const grouped = {};
+    data.forEach(item => {
+      if (!grouped[item.date]) grouped[item.date] = [];
+      grouped[item.date].push(item);
+    });
+
+    // Display
+    const container = document.getElementById("dataContainer");
+    container.innerHTML = "";
+
+    Object.keys(grouped).forEach(date => {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "group";
+
+      let itemsHTML = "";
+      grouped[date].forEach(d => {
+        itemsHTML += `
+          <div class="item">
+            <div class="name">${d.name}</div>
+            <div class="message">${d.msg}</div>
+          </div>
+        `;
+      });
+
+      groupDiv.innerHTML = `<h2>${date}</h2>${itemsHTML}`;
+      container.appendChild(groupDiv);
+    });
+
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+}
+
+// पहली बार load
+fetchSheet();
+
+// हर 15 सेकंड बाद auto-refresh
+setInterval(fetchSheet, 15000);
+</script>
+</body>
+</html>
