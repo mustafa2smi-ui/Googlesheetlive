@@ -75,10 +75,10 @@ async function fetchSheet() {
 
         itemsHTML += `
   <div class="item card">
-    <div class="name">
-      <a href="${d.msg}" target="_blank" class="headline-link">${d.name}</a>
-    </div>
-    <div class="headline">${d.msgTitle || d.msg}</div>
+    <a href="${d.msg}" target="_blank" class="headline-link">
+      <div class="name">${d.name}</div>
+    </a>
+    <div class="headline" style="display:none;">${d.msg}</div> <!-- hidden for speech -->
   </div>
 `;
       });
