@@ -241,6 +241,7 @@ mainPlayBtn.addEventListener("click", ()=>{
   mainPlayBtn.innerText = "⏹️";
 });
   */
+  /*
     const mainPlayBtn = document.getElementById("mainPlayBtn");
 
 mainPlayBtn.addEventListener("click", ()=>{
@@ -284,6 +285,62 @@ mainPlayBtn.addEventListener("click", ()=>{
   }
 
   speakNext(); // start reading
+});
+  */
+    const mainPlayBtn = document.getElementById("mainPlayBtn");
+let selectedGroup = null; // aap fetchSheet ke baad ya group click pe set karoge
+
+// Card / group click pe selection
+function attachGroupSelection(){
+  document.querySelectorAll(".group").forEach(group=>{
+    group.addEventListener("click", ()=>{
+      document.querySelectorAll(".group").forEach(g=>g.classList.remove("selected"));
+      group.classList.add("selected");
+      selectedGroup = group;
+    });
+  });
+}
+
+// Floating Play / Stop
+mainPlayBtn.addEventListener("click", ()=>{
+  if(!selectedGroup){
+    alert("Please select a group first!");
+    return;
+  }
+
+  // Stop ongoing speech
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    mainPlayBtn.innerText = "▶️";
+    return;
+  }
+
+  // Get all lines inside selected group
+  const lines = selectedGroup.querySelectorAll(".name");
+  const texts = Array.from(lines).map(l => l.innerText.trim()).filter(t => t);
+  if(texts.length === 0){
+    alert("Nothing to read!");
+    return;
+  }
+
+  let i = 0;
+  mainPlayBtn.innerText = "⏹️"; // show stop icon
+
+  const speakNext = () => {
+    if(i >= texts.length){
+      mainPlayBtn.innerText = "▶️"; // back to play icon when done
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(texts[i]);
+    utter.lang = "hi-IN";
+    utter.onend = () => {
+      i++;
+      speakNext();
+    }
+    window.speechSynthesis.speak(utter);
+  }
+
+  speakNext();
 });
 // First load
 fetchSheet();
