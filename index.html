@@ -96,6 +96,7 @@ async function fetchSheet() {
       });
     });
     */
+    /*
 // Prevent single click opening
 document.querySelectorAll(".headline-link").forEach(link=>{
   link.addEventListener("click", e=>{
@@ -107,7 +108,29 @@ document.querySelectorAll(".headline-link").forEach(link=>{
     window.open(link.href, "_blank");
   });
 });
-    
+  */  
+    // Card selection
+document.querySelectorAll(".card").forEach(card => {
+  card.addEventListener("click", ()=>{
+    document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+    card.classList.add("selected");
+    selectedCard = card;
+  });
+});
+
+// Heading link: single click select, double-click open
+document.querySelectorAll(".headline-link").forEach(link=>{
+  // Single click on link → stop default open, allow card select
+  link.addEventListener("click", e=>{
+    e.preventDefault(); // page open na ho
+    e.stopPropagation(); // click card ko interfere na kare
+  });
+  
+  // Double click → open link
+  link.addEventListener("dblclick", e=>{
+    window.open(link.href, "_blank");
+  });
+});
   } catch (err) {
     console.error("Error fetching sheet:", err);
   }
