@@ -149,6 +149,7 @@ document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
   window.speechSynthesis.speak(utter);
 });
   */
+  /*
   const mainPlayBtn = document.getElementById("mainPlayBtn");
 
 mainPlayBtn.addEventListener("click", ()=>{
@@ -178,6 +179,34 @@ mainPlayBtn.addEventListener("click", ()=>{
 
   window.speechSynthesis.speak(utter);
   mainPlayBtn.innerText = "⏹️"; // icon to stop
+});
+  */
+  const mainPlayBtn = document.getElementById("mainPlayBtn");
+
+mainPlayBtn.addEventListener("click", ()=>{
+  if(!selectedCard){
+    alert("Please select a card first!");
+    return;
+  }
+
+  const textToRead = selectedCard.querySelector(".name").innerText.trim();
+  if(!textToRead){
+    alert("Nothing to read!");
+    return;
+  }
+
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+    mainPlayBtn.innerText = "▶️";
+    return;
+  }
+
+  const utter = new SpeechSynthesisUtterance(textToRead);
+  utter.lang = "hi-IN";
+  utter.onend = () => { mainPlayBtn.innerText = "▶️"; }
+
+  window.speechSynthesis.speak(utter);
+  mainPlayBtn.innerText = "⏹️";
 });
 // First load
 fetchSheet();
