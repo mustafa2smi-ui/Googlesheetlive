@@ -93,7 +93,7 @@ async function fetchSheet() {
     console.error("Error fetching sheet:", err);
   }
 }
-
+/*
 // Floating Play Button
 document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
   if(!selectedCard){
@@ -105,7 +105,30 @@ document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
   speech.lang = "hi-IN";
   window.speechSynthesis.speak(textToRead);
 });
+*/
+  document.getElementById("mainPlayBtn").addEventListener("click", ()=>{
+  if(!selectedCard){
+    alert("Please select a card first!");
+    return;
+  }
 
+  const textToRead = selectedCard.querySelector(".headline")?.innerText.trim();
+  if(!textToRead){
+    alert("No text found in this card!");
+    return;
+  }
+
+  // Stop any ongoing speech
+  if(window.speechSynthesis.speaking){
+    window.speechSynthesis.cancel();
+  }
+
+  const utter = new SpeechSynthesisUtterance(textToRead);
+  utter.lang = "hi-IN"; // Hindi voice
+  utter.rate = 1;       // speed
+  utter.pitch = 1;      // pitch
+  window.speechSynthesis.speak(utter);
+});
 // First load
 fetchSheet();
 // Auto-refresh every 15 sec
