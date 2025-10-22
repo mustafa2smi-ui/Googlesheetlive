@@ -118,14 +118,21 @@ document.querySelectorAll(".card").forEach(card => {
   });
 });
 
-// Heading link: single click select, double-click open
+// Heading link: single click select card, double-click open link
 document.querySelectorAll(".headline-link").forEach(link=>{
-  // Single click on link → stop default open, allow card select
   link.addEventListener("click", e=>{
-    e.preventDefault(); // page open na ho
-    e.stopPropagation(); // click card ko interfere na kare
+    e.preventDefault();       // page open na ho
+    e.stopPropagation();      // click parent par bubble na ho
+    
+    // Card select kar do
+    const card = link.closest(".card");
+    if(card){
+      document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      selectedCard = card;
+    }
   });
-  
+
   // Double click → open link
   link.addEventListener("dblclick", e=>{
     window.open(link.href, "_blank");
