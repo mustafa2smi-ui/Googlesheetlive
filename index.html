@@ -86,7 +86,7 @@ async function fetchSheet() {
       groupDiv.innerHTML = `<h2>${date}</h2>${itemsHTML}`;
       container.appendChild(groupDiv);
     });
-
+/*
     // Attach click listeners after DOM update
     document.querySelectorAll(".card").forEach(card => {
       card.addEventListener("click", ()=>{
@@ -95,7 +95,18 @@ async function fetchSheet() {
         selectedCard = card;
       });
     });
-
+*/
+    // Prevent single click opening
+document.querySelectorAll(".headline-link").forEach(link=>{
+  link.addEventListener("click", e=>{
+    e.preventDefault(); // single click me open nahi hoga
+  });
+  
+  // Double click pe open
+  link.addEventListener("dblclick", e=>{
+    window.open(link.href, "_blank");
+  });
+});
   } catch (err) {
     console.error("Error fetching sheet:", err);
   }
@@ -154,7 +165,7 @@ mainPlayBtn.addEventListener("click", ()=>{
   }
 
   // Naya speech play karna
-  const textToRead = selectedCard.querySelector(".headline")?.innerText.trim();
+  const textToRead = selectedCard.querySelector(".Name")?.innerText.trim();
   if(!textToRead) return;
 
   const utter = new SpeechSynthesisUtterance(textToRead);
