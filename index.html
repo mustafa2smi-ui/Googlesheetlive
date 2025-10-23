@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 Date-wise Google Sheet Data</title>
+<style>
+body { font-family: "Segoe UI", sans-serif; background: #f4f6f8; margin:0; padding:20px; }
+h1 { text-align:center; color:#333; }
+.group {
+  background:white; border-radius:12px; margin:15px auto; padding:10px 15px;
+  max-width:500px; box-shadow:0 0 8px rgba(0,0,0,0.1); cursor:pointer;
+}
+.group h2 {
+  margin:0 0 10px; color:#007BFF; border-bottom:2px solid #007BFF;
+  padding-bottom:4px;
+}
+.group ul { margin:0; padding-left:20px; }
+.group li { margin:6px 0; color:#444; }
+.refreshNote { text-align:center; color:#777; font-size:14px; margin-top:10px; }
+.selected {
+  border:3px solid #4CAF50; box-shadow:0 0 15px rgba(76,175,80,0.5);
+}
+#mainPlayBtn {
+  position:fixed; bottom:20px; right:20px; background:#4CAF50; color:white;
+  border:none; border-radius:50%; width:60px; height:60px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px; box-shadow:0 4px 8px rgba(0,0,0,0.3); cursor:pointer;
+}
+  .group {
+  margin: 15px 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f6f6f6;
+  transition: all 0.3s ease;
+}
+
+.group.selected {
+  border: 3px solid #4CAF50;
+  box-shadow: 0 0 15px rgba(76,175,80,0.4);
+}
+
+.headline {
+  cursor: pointer;
+  list-style: disc;
+  margin-left: 20px;
+  transition: color 0.2s ease;
+}
+
+.headline:hover {
+  color: #007bff;
+}
+  .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #007bff;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.navbar .title {
+  font-weight: bold;
+  font-size: 18px;
+}
+.navbar button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: background 0.3s;
+}
+.navbar button:hover {
+  background: rgba(255,255,255,0.4);
+}
+  .footer {
+  text-align: center;
+  padding: 12px;
+  background: #f1f1f1;
+  color: #444;
+  margin-top: 30px;
+  border-top: 2px solid #ddd;
+  font-size: 14px;
+  }
+</style>
+</head>
+<body>
+  <header class="navbar">
+  <div class="title">📅 Sheet Reader</div>
+  <nav>
+    <button id="refreshBtn">🔄 Refresh</button>
+    <button id="aboutBtn">ℹ️ About</button>
+  </nav>
+  </header>
+<h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
+<div id="dataContainer">Loading...</div>
+<p class="refreshNote">Auto-refreshes every 15 seconds</p>
+
+<!-- Floating Play Button -->
+<button id="mainPlayBtn" title="Play Selected">▶️</button>
+
+      <script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/1DtRlkaP23ihYmN8mn4Gx7deLicpVhDY6AiY-bN5pqt8/gviz/tq?tqx=out:json";
+let selectedGroup = null;
+let isPlaying = false;
+
+// 🔹 Fetch Sheet Data
+async function fetchSheet() {
+  try {
+    const res = await fetch(sheetURL);
+    const text = await res.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    const data = rows.map(r => ({
+      date: r.c[0]?.v || "",
+      title: r.c[1]?.v || "",
+      link: r.c[2]?.v || ""
+    }));
+
+    // 🔹 Group by Date
+    const grouped = {};
+    data.forEach(item => {
+      if (!grouped[item.date]) grouped[item.date] = [];
+      grouped[item.date].push(item);
+    });
+
+    const container = document.getElementById("dataContainer");
+    container.innerHTML = "";
+
+    Object.keys(grouped).forEach(date => {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "group";
+
+      // तारीख parse करो
+      let formattedDate = date;
+      try {
+        const parts = date.split(/[-\/]/);
+        if (parts.length === 3) {
+          const d = parseInt(parts[0]);
+          const m = parseInt(parts[1]) - 1;
+          const y = parseInt(parts[2].length === 2 ? "20" + parts[2] : parts[2]);
+          const dt = new Date(y, m, d);
+          formattedDate = dt.toLocaleDateString("hi-IN", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          });
+        }
+      } catch(e) {}
+
+      const listItems = grouped[date].map(d =>
+        `<li class="headline" data-link="${d.link}">${d.title}</li>`
+      ).join("");
+
+      // Header + Headlines
+      groupDiv.innerHTML = `
+        <div class="dateHeader">
+          माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां। दिनांक ${formattedDate}.
+        </div>
+        <ul>${listItems}</ul>
+      `;
+
+      // Group select logic
+      groupDiv.addEventListener("click", ()=>{
+        document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
+        groupDiv.classList.add("selected");
+        selectedGroup = groupDiv;
+      });
+
+      container.appendChild(groupDiv);
+    });
+
+    // Double-click to open link
+    document.querySelectorAll(".headline").forEach(item => {
+      item.addEventListener("dblclick", e => {
+        e.stopPropagation();
+        const link = item.dataset.link;
+        if (link && link.startsWith("http")) {
+          window.open(link, "_blank");
+        } else {
+          alert("No valid link found for this headline!");
+        }
+      });
+    });
+
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+}
+
+// 🔹 Play Button Logic
+const mainPlayBtn = document.getElementById("mainPlayBtn");
+
+mainPlayBtn.addEventListener("click", () => {
+  if (isPlaying) {
+    window.speechSynthesis.cancel();
+    isPlaying = false;
+    mainPlayBtn.innerText = "▶️";
+    return;
+  }
+
+  if (!selectedGroup) {
+    alert("कृपया पहले किसी date group पर क्लिक करें!");
+    return;
+  }
+
+  const header = selectedGroup.querySelector(".dateHeader");
+  const headerText = header ? header.textContent.trim() : "";
+
+  const lines = selectedGroup.querySelectorAll(".headline");
+  const headlines = Array.from(lines).map(el => el.innerText.trim()).filter(t => t);
+
+  const allText = [headerText, ...headlines];
+
+  if (allText.length === 0) {
+    alert("इस group में कोई text नहीं मिला!");
+    return;
+  }
+
+  isPlaying = true;
+  mainPlayBtn.innerText = "⏹️";
+
+  let i = 0;
+  const speakNext = () => {
+    if (!isPlaying || i >= allText.length) {
+      isPlaying = false;
+      mainPlayBtn.innerText = "▶️";
+      return;
+    }
+
+    const utter = new SpeechSynthesisUtterance(allText[i]);
+    utter.lang = "hi-IN";
+    utter.rate = 1;
+    utter.pitch = 1;
+
+    utter.onend = () => {
+      if (isPlaying) {
+        i++;
+        speakNext();
+      }
+    };
+    utter.onerror = (err) => {
+      console.error("Speech error:", err);
+      i++;
+      speakNext();
+    };
+
+    window.speechSynthesis.speak(utter);
+  };
+
+  speakNext();
+});
+
+// Load initially
+fetchSheet();
+// Auto-refresh every 15 seconds
+setInterval(fetchSheet, 15000);
+</script>
+  <footer class="footer">
+  <p>© 2025 Sheet Reader — Built with ❤️ and ☕</p>
+  </footer>
+</body>
+</html>
