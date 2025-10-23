@@ -109,6 +109,7 @@ document.querySelectorAll(".headline-link").forEach(link=>{
   });
 });
   */  
+    /*
     // Card selection
 document.querySelectorAll(".card").forEach(card => {
   card.addEventListener("click", ()=>{
@@ -117,7 +118,16 @@ document.querySelectorAll(".card").forEach(card => {
     selectedCard = card;
   });
 });
-
+*/
+    // अब हर inner item पर click करने से पूरा group select होगा
+document.querySelectorAll(".item.card").forEach(item => {
+  item.addEventListener("click", ()=>{
+    document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
+    const group = item.closest(".group");
+    group.classList.add("selected");
+    selectedCard = group; // अब selectedCard में पूरा group है
+  });
+});
 // Heading link: single click select card, double-click open link
 document.querySelectorAll(".headline-link").forEach(link=>{
   link.addEventListener("click", e=>{
