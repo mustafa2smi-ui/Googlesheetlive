@@ -50,9 +50,55 @@ h1 { text-align:center; color:#333; }
 .headline:hover {
   color: #007bff;
 }
+  .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #007bff;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.navbar .title {
+  font-weight: bold;
+  font-size: 18px;
+}
+.navbar button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: background 0.3s;
+}
+.navbar button:hover {
+  background: rgba(255,255,255,0.4);
+}
+  .footer {
+  text-align: center;
+  padding: 12px;
+  background: #f1f1f1;
+  color: #444;
+  margin-top: 30px;
+  border-top: 2px solid #ddd;
+  font-size: 14px;
+  }
 </style>
 </head>
 <body>
+  <header class="navbar">
+  <div class="title">📅 Sheet Reader</div>
+  <nav>
+    <button id="refreshBtn">🔄 Refresh</button>
+    <button id="aboutBtn">ℹ️ About</button>
+  </nav>
+  </header>
 <h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
 <div id="dataContainer">Loading...</div>
 <p class="refreshNote">Auto-refreshes every 15 seconds</p>
@@ -132,7 +178,7 @@ async function fetchSheet() {
     console.error("Error fetching sheet:", err);
   }
 }
-
+/*
 // 🔹 Play Button Logic
 const mainPlayBtn = document.getElementById("mainPlayBtn");
 
@@ -199,6 +245,94 @@ mainPlayBtn.addEventListener("click", () => {
 fetchSheet();
 // Auto-refresh every 15s
 setInterval(fetchSheet, 15000);
+  */
+  mainPlayBtn.addEventListener("click", () => {
+  if (isPlaying) {
+    window.speechSynthesis.cancel();
+    isPlaying = false;
+    mainPlayBtn.innerText = "▶️";
+    return;
+  }
+
+  if (!selectedGroup) {
+    alert("कृपया पहले किसी date group पर क्लिक करें!");
+    return;
+  }
+
+  // 🔹 तारीख निकालो (group heading से)
+  const dateHeader = selectedGroup.querySelector("h2") || selectedGroup.querySelector(".dateHeader");
+  const rawDate = dateHeader ? dateHeader.textContent.trim() : "";
+
+  let formattedDate = rawDate;
+  let weekday = "";
+
+  try {
+    const dateObj = new Date(rawDate);
+    if (!isNaN(dateObj)) {
+      const options = { weekday: "long" };
+      weekday = dateObj.toLocaleDateString("hi-IN", options);
+      const d = dateObj.getDate().toString().padStart(2, "0");
+      const m = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+      const y = dateObj.getFullYear();
+      formattedDate = `${d}/${m}/${y}`;
+    }
+  } catch (e) {}
+
+  // 🔹 Headlines लाओ
+  const lines = selectedGroup.querySelectorAll(".headline");
+  const texts = Array.from(lines).map(el => el.innerText.trim()).filter(t => t.length > 0);
+
+  if (texts.length === 0) {
+    alert("इस group में कोई text नहीं मिला!");
+    return;
+  }
+
+  // 🔹 अब intro line + headlines जोड़ो
+  const introLine = `माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां। दिनांक ${formattedDate}. दिन – ${weekday}.`;
+  const finalLines = [introLine, ...texts];
+
+  // 🔹 बोलना शुरू करो
+  isPlaying = true;
+  mainPlayBtn.innerText = "⏹️";
+
+  let i = 0;
+
+  const speakNext = () => {
+    if (!isPlaying || i >= finalLines.length) {
+      isPlaying = false;
+      mainPlayBtn.innerText = "▶️";
+      return;
+    }
+
+    const utter = new SpeechSynthesisUtterance(finalLines[i]);
+    utter.lang = "hi-IN";
+    utter.rate = 1;
+    utter.pitch = 1;
+
+    utter.onend = () => {
+      if (isPlaying) {
+        i++;
+        speakNext();
+      }
+    };
+    utter.onerror = (err) => {
+      console.error("Speech error:", err);
+      i++;
+      speakNext();
+    };
+    
+    window.speechSynthesis.speak(utter);
+  };
+
+  speakNext();
+});
+  // Load initially
+fetchSheet();
+// Auto-refresh every 15s
+setInterval(fetchSheet, 15000);
 </script>
+  <footer class="footer">
+  <p>© 2025 Sheet Reader — Built with ❤️ and ☕</p>
+  </footer>
 </body>
 </html>
