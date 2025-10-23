@@ -89,6 +89,28 @@ h1 { text-align:center; color:#333; }
   border-top: 2px solid #ddd;
   font-size: 14px;
   }
+  .banner {
+  background: linear-gradient(135deg, #ffb347, #ffcc33);
+  text-align: center;
+  color: #222;
+  padding: 10px;
+  border-radius: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+
+.date-line {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #000;
+}
+
+.welcome-line {
+  font-size: 0.95rem;
+  margin-top: 4px;
+  color: #333;
+}
 </style>
 </head>
 <body>
@@ -178,7 +200,7 @@ async function fetchSheet() {
       const listItems = grouped[date].map(d =>
         `<li class="headline" data-link="${d.link}">${d.title}</li>`
       ).join("");
-
+/*
       // Header + Headlines
       groupDiv.innerHTML = `
         <div class="dateHeader">
@@ -186,7 +208,21 @@ async function fetchSheet() {
         </div>
         <ul>${listItems}</ul>
       `;
+*/
+      const formattedDate = new Date(date).toLocaleDateString('hi-IN', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+});
 
+groupDiv.innerHTML = `
+  <div class="banner">
+    <div class="date-line">${formattedDate}</div>
+    <div class="welcome-line">🗞️ माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां।</div>
+  </div>
+  <ul>${listItems}</ul>
+`;
       // Select logic
       groupDiv.addEventListener("click", () => {
         document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
