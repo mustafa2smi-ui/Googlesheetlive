@@ -495,7 +495,7 @@ if (banner) {
 // Load initially
 fetchSheet();
 // Auto-refresh every 15 seconds
-setInterval(fetchSheet, 15000);
+setInterval(fetchSheet, 300000);
             function showMore() {
   const hidden = document.querySelectorAll(".group.hidden");
   for(let i=0; i<4 && i<hidden.length; i++) hidden[i].classList.remove("hidden");
@@ -534,8 +534,8 @@ setInterval(fetchSheet, 15000);
 
   // Intro line + headlines combine
   const dateHeader = selectedGroup.querySelector(".dateHeader")?.innerText || "";
-  const shareText = `${dateHeader}\n\n${texts.join("\n")}`;
-
+  /*const shareText = `${dateHeader}\n\n${texts.join("\n")}`;*/
+const shareText = `🎤Taza Breaking News\n\n${dateHeader}\n\n${texts.join("\n")}`;
   const shareData = {
     title: "MicNews123 - Selected Headlines",
     text: shareText,
