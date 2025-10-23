@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 Date-wise Google Sheet Data</title>
+<style>
+body { font-family: "Segoe UI", sans-serif; background: #f4f6f8; margin:0; padding:20px; }
+h1 { text-align:center; color:#333; }
+.group {
+  background:white; border-radius:12px; margin:15px auto; padding:10px 15px;
+  max-width:500px; box-shadow:0 0 8px rgba(0,0,0,0.1); cursor:pointer;
+}
+.group h2 {
+  margin:0 0 10px; color:#007BFF; border-bottom:2px solid #007BFF;
+  padding-bottom:4px;
+}
+.group ul { margin:0; padding-left:20px; }
+.group li { margin:6px 0; color:#444; }
+.refreshNote { text-align:center; color:#777; font-size:14px; margin-top:10px; }
+.selected {
+  border:3px solid #4CAF50; box-shadow:0 0 15px rgba(76,175,80,0.5);
+}
+#mainPlayBtn {
+  position:fixed; bottom:20px; right:20px; background:#4CAF50; color:white;
+  border:none; border-radius:50%; width:60px; height:60px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px; box-shadow:0 4px 8px rgba(0,0,0,0.3); cursor:pointer;
+}
+</style>
+</head>
+<body>
+<h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
+<div id="dataContainer">Loading...</div>
+<p class="refreshNote">Auto-refreshes every 15 seconds</p>
+
+<!-- Floating Play Button -->
+<button id="mainPlayBtn" title="Play Selected">▶️</button>
+
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/1DtRlkaP23ihYmN8mn4Gx7deLicpVhDY6AiY-bN5pqt8/gviz/tq?tqx=out:json";
+let selectedGroup = null;
+
+// 🔹 Fetch Sheet Data
+async function fetchSheet() {
+  try {
+    const res = await fetch(sheetURL);
+    const text = await res.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    const data = rows.map(r => ({
+      date: r.c[0]?.v || "",
+      name: r.c[1]?.v || "",
+      msg: r.c[2]?.v || ""
+    }));
+
+    // Group by Date
+    const grouped = {};
+    data.forEach(item => {
+      if (!grouped[item.date]) grouped[item.date] = [];
+      grouped[item.date].push(item);
+    });
+
+    // Render HTML
+    const container = document.getElementById("dataContainer");
+    container.innerHTML = "";
+
+    Object.keys(grouped).forEach(date => {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "group";
+
+      // Headline list items
+      const listItems = grouped[date].map(d => 
+        `<li><strong>${d.name}:</strong> ${d.msg}</li>`
+      ).join("");
+
+      groupDiv.innerHTML = `
+        <h2>${date}</h2>
+        <ul>${listItems}</ul>
+      `;
+
+      // Click to select group
+      groupDiv.addEventListener("click", ()=>{
+        document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
+        groupDiv.classList.add("selected");
+        selectedGroup = groupDiv;
+      });
+
+      container.appendChild(groupDiv);
+    });
+
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+}
+
+// 🔹 Play Button Logic (reads only selected date group)
+const mainPlayBtn = document.getElementById("mainPlayBtn");
+
+mainPlayBtn.addEventListener("click", () => {
+  if (!selectedGroup) {
+    alert("कृपया पहले किसी date group पर क्लिक करें!");
+    return;
+  }
+
+  // अगर पहले से बोल रहा है → रोक दो
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    mainPlayBtn.innerText = "▶️";
+    return;
+  }
+
+  // अब सिर्फ selected group की lines पढ़ो
+  const lines = selectedGroup.querySelectorAll("li");
+  const texts = Array.from(lines).map(el => el.innerText.trim()).filter(t => t.length > 0);
+
+  if (texts.length === 0) {
+    alert("इस group में कोई text नहीं मिला!");
+    return;
+  }
+
+  mainPlayBtn.innerText = "⏹️";
+  let i = 0;
+
+  const speakNext = () => {
+    if (i >= texts.length) {
+      mainPlayBtn.innerText = "▶️";
+      return;
+    }
+
+    const utter = new SpeechSynthesisUtterance(texts[i]);
+    utter.lang = "hi-IN";
+    utter.rate = 1;
+    utter.pitch = 1;
+
+    utter.onend = () => { i++; speakNext(); };
+    utter.onerror = (err) => { console.error("Speech error:", err); i++; speakNext(); };
+    window.speechSynthesis.speak(utter);
+  };
+
+  speakNext();
+});
+
+// Load initially
+fetchSheet();
+// Auto-refresh every 15s
+setInterval(fetchSheet, 15000);
+</script>
+</body>
+</html>
