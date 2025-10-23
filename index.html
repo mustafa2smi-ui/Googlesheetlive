@@ -106,7 +106,7 @@ h1 { text-align:center; color:#333; }
 <!-- Floating Play Button -->
 <button id="mainPlayBtn" title="Play Selected">▶️</button>
 
-      <script>
+          <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/1DtRlkaP23ihYmN8mn4Gx7deLicpVhDY6AiY-bN5pqt8/gviz/tq?tqx=out:json";
 let selectedGroup = null;
 let isPlaying = false;
@@ -125,7 +125,7 @@ async function fetchSheet() {
       link: r.c[2]?.v || ""
     }));
 
-    // 🔹 Group by Date
+    // Group by Date
     const grouped = {};
     data.forEach(item => {
       if (!grouped[item.date]) grouped[item.date] = [];
@@ -139,24 +139,42 @@ async function fetchSheet() {
       const groupDiv = document.createElement("div");
       groupDiv.className = "group";
 
-      // तारीख parse करो
-      let formattedDate = date;
+      // ✅ तारीख पहचानने की कोशिश करें (सभी फॉर्मेट के लिए)
+      let formattedDate = "";
       try {
-        const parts = date.split(/[-\/]/);
-        if (parts.length === 3) {
-          const d = parseInt(parts[0]);
-          const m = parseInt(parts[1]) - 1;
-          const y = parseInt(parts[2].length === 2 ? "20" + parts[2] : parts[2]);
-          const dt = new Date(y, m, d);
-          formattedDate = dt.toLocaleDateString("hi-IN", {
+        let dateObj;
+        if (typeof date === "string" && date.startsWith("Date(")) {
+          // Format: Date(2025,3,10)
+          const parts = date.match(/\d+/g);
+          if (parts && parts.length >= 3) {
+            const y = parseInt(parts[0]);
+            const m = parseInt(parts[1]); // Already 0-based
+            const d = parseInt(parts[2]);
+            dateObj = new Date(y, m, d);
+          }
+        } else if (typeof date === "number") {
+          // Google serial number date
+          const excelEpoch = new Date(1899, 11, 30);
+          dateObj = new Date(excelEpoch.getTime() + date * 86400000);
+        } else {
+          dateObj = new Date(date);
+        }
+
+        if (dateObj && !isNaN(dateObj)) {
+          formattedDate = dateObj.toLocaleDateString("hi-IN", {
             weekday: "long",
             day: "numeric",
             month: "long",
             year: "numeric"
           });
+        } else {
+          formattedDate = date; // fallback text
         }
-      } catch(e) {}
+      } catch (e) {
+        formattedDate = date;
+      }
 
+      // Headlines
       const listItems = grouped[date].map(d =>
         `<li class="headline" data-link="${d.link}">${d.title}</li>`
       ).join("");
@@ -164,13 +182,13 @@ async function fetchSheet() {
       // Header + Headlines
       groupDiv.innerHTML = `
         <div class="dateHeader">
-          माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां। दिनांक ${formattedDate}.
+          माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां। <br>दिनांक ${formattedDate}.
         </div>
         <ul>${listItems}</ul>
       `;
 
-      // Group select logic
-      groupDiv.addEventListener("click", ()=>{
+      // Select logic
+      groupDiv.addEventListener("click", () => {
         document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
         groupDiv.classList.add("selected");
         selectedGroup = groupDiv;
@@ -197,7 +215,7 @@ async function fetchSheet() {
   }
 }
 
-// 🔹 Play Button Logic
+// 🔊 Play Button Logic
 const mainPlayBtn = document.getElementById("mainPlayBtn");
 
 mainPlayBtn.addEventListener("click", () => {
