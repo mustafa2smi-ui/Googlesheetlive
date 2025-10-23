@@ -145,12 +145,24 @@ async function fetchSheet() {
            ${d.title}
          </li>`
       ).join("");
-
+/*
       groupDiv.innerHTML = `
         <h2>${date}</h2>
         <ul>${listItems}</ul>
       `;
+*/
+      // Inside fetchSheet(), where you use groupDiv.innerHTML
+const formattedDate = new Date(date).toLocaleDateString('en-IN', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric'
+});
 
+groupDiv.innerHTML = `
+  <div class="dateHeader">${formattedDate}</div>
+  <ul>${listItems}</ul>
+`;
       // जब group पर click करें → select करें
       groupDiv.addEventListener("click", ()=>{
         document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
