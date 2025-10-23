@@ -84,6 +84,7 @@ h1 { text-align:center; color:#333; }
 .headline:hover {
   color: #007bff;
 }
+  /*
   .navbar {
   position: sticky;
   top: 0;
@@ -113,6 +114,109 @@ h1 { text-align:center; color:#333; }
 }
 .navbar button:hover {
   background: rgba(255,255,255,0.4);
+}
+  */
+  /* 🌐 Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0b3954;
+  color: #fff;
+  padding: 10px 15px;
+  border-bottom: 3px solid #ffcc00;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.nav-title {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.menu-toggle {
+  font-size: 1.6em;
+  cursor: pointer;
+  display: none;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.nav-links li a:hover {
+  color: #ffcc00;
+}
+
+/* 📱 Responsive menu */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background: #0b3954;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    width: 180px;
+    border-radius: 0 0 8px 8px;
+  }
+  .nav-links.active {
+    display: flex;
+  }
+}
+
+/* 🔁 Affiliate Scroll Section */
+.affiliate-section {
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(90deg, #fbc2eb, #a6c1ee);
+  padding: 10px 0;
+  margin-top: 20px;
+  border-top: 2px solid #ccc;
+}
+
+.scroll-container {
+  display: flex;
+  gap: 20px;
+  animation: scrollAds 20s linear infinite;
+}
+
+.ad-card {
+  flex: 0 0 auto;
+  width: 200px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  transition: transform 0.3s;
+}
+
+.ad-card:hover {
+  transform: scale(1.05);
+}
+
+.ad-card img {
+  width: 100%;
+  display: block;
+}
+
+@keyframes scrollAds {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
   .footer {
   text-align: center;
@@ -160,6 +264,7 @@ h1 { text-align:center; color:#333; }
 </style>
 </head>
 <body>
+  <!--
   <header class="navbar">
   <div class="title">📅 Sheet Reader</div>
   <nav>
@@ -167,6 +272,18 @@ h1 { text-align:center; color:#333; }
     <button id="aboutBtn">ℹ️ About</button>
   </nav>
   </header>
+  -->
+  <!-- 🌐 Top Navbar -->
+<nav class="navbar">
+  <div class="nav-title">🗞️ माईकन्यूज़123</div>
+  <div class="menu-toggle" id="menuToggle">☰</div>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#home">मुख्य समाचार</a></li>
+    <li><a href="#sports">खेल</a></li>
+    <li><a href="#tech">टेक्नोलॉजी</a></li>
+    <li><a href="#contact">संपर्क</a></li>
+  </ul>
+</nav>
  <!-- <button onclick="shareSite()">Share Site 🌐</button>-->
 <h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
 <div id="dataContainer">Loading...</div>
@@ -429,7 +546,34 @@ setInterval(fetchSheet, 15000);
     prompt("Aapka device share support nahi karta. Copy karein:", shareText + "\n\nLink: " + window.location.href);
   });
             }
+            // 🧭 Menu Toggle for mobile
+const menuToggle = document.getElementById("menuToggle");
+const navLinks = document.getElementById("navLinks");
+
+menuToggle.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+});
 </script>
+  <!-- 🔁 Auto-Scroll Affiliate Section -->
+<div class="affiliate-section">
+  <div class="scroll-container" id="scrollContainer">
+    <div class="ad-card">
+      <a href="https://amzn.to/xxxx1" target="_blank">
+        <img src="https://via.placeholder.com/200x100.png?text=Ad+1" alt="Ad 1">
+      </a>
+    </div>
+    <div class="ad-card">
+      <a href="https://amzn.to/xxxx2" target="_blank">
+        <img src="https://via.placeholder.com/200x100.png?text=Ad+2" alt="Ad 2">
+      </a>
+    </div>
+    <div class="ad-card">
+      <a href="https://amzn.to/xxxx3" target="_blank">
+        <img src="https://via.placeholder.com/200x100.png?text=Ad+3" alt="Ad 3">
+      </a>
+    </div>
+  </div>
+</div>
   <footer class="footer">
   <p>© 2025 Sheet Reader — Built with ❤️ and ☕</p>
   </footer>
