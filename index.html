@@ -385,6 +385,7 @@ setInterval(fetchSheet, 15000);
   if(document.querySelectorAll(".group.hidden").length === 0)
     document.getElementById("showMoreBtn").style.display = "none";
             }
+            /*
             function shareSite() {
   const shareData = {
     title: "My Live News Site",
@@ -392,6 +393,41 @@ setInterval(fetchSheet, 15000);
     url: window.location.href
   };
   navigator.share(shareData).catch(console.error);
+            }
+            */
+            function shareSite() {
+  if (!selectedGroup) {
+    alert("Koi card select nahi hai! Pure site ka link share karein.");
+    const shareData = {
+      title: "My Live News Site",
+      text: "Get live news headlines updated from Google Sheet!",
+      url: window.location.href
+    };
+    navigator.share(shareData).catch(() => {
+      prompt("Share link manually:", window.location.href);
+    });
+    return;
+  }
+
+  // Agar card select hai, headline text collect karein
+  const headlines = selectedGroup.querySelectorAll(".headline");
+  const texts = Array.from(headlines)
+                     .map(h => h.innerText.trim())
+                     .filter(t => t.length > 0);
+
+  // Intro line + headlines combine
+  const dateHeader = selectedGroup.querySelector(".dateHeader")?.innerText || "";
+  const shareText = `${dateHeader}\n\n${texts.join("\n")}`;
+
+  const shareData = {
+    title: "MicNews123 - Selected Headlines",
+    text: shareText,
+    url: window.location.href
+  };
+
+  navigator.share(shareData).catch(() => {
+    prompt("Aapka device share support nahi karta. Copy karein:", shareText + "\n\nLink: " + window.location.href);
+  });
             }
 </script>
   <footer class="footer">
