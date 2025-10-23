@@ -111,6 +111,7 @@ h1 { text-align:center; color:#333; }
   margin-top: 4px;
   color: #333;
 }
+  .hidden { display: none; }
 </style>
 </head>
 <body>
@@ -121,8 +122,10 @@ h1 { text-align:center; color:#333; }
     <button id="aboutBtn">ℹ️ About</button>
   </nav>
   </header>
+  <button onclick="shareSite()">Share Site 🌐</button>
 <h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
 <div id="dataContainer">Loading...</div>
+  <button id="showMoreBtn" onclick="showMore()">Show More</button>
 <p class="refreshNote">Auto-refreshes every 15 seconds</p>
 
 <!-- Floating Play Button -->
@@ -326,6 +329,20 @@ if (banner) {
 fetchSheet();
 // Auto-refresh every 15 seconds
 setInterval(fetchSheet, 15000);
+            function showMore() {
+  const hidden = document.querySelectorAll(".group.hidden");
+  for(let i=0; i<4 && i<hidden.length; i++) hidden[i].classList.remove("hidden");
+  if(document.querySelectorAll(".group.hidden").length === 0)
+    document.getElementById("showMoreBtn").style.display = "none";
+            }
+            function shareSite() {
+  const shareData = {
+    title: "My Live News Site",
+    text: "Get live news headlines updated from Google Sheet!",
+    url: window.location.href
+  };
+  navigator.share(shareData).catch(console.error);
+            }
 </script>
   <footer class="footer">
   <p>© 2025 Sheet Reader — Built with ❤️ and ☕</p>
