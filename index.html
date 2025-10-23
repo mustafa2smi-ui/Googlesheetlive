@@ -36,10 +36,10 @@ h1 { text-align:center; color:#333; }
 
 <!-- Floating Play Button -->
 <button id="mainPlayBtn" title="Play Selected">▶️</button>
-
 <script>
 const sheetURL = "https://docs.google.com/spreadsheets/d/1DtRlkaP23ihYmN8mn4Gx7deLicpVhDY6AiY-bN5pqt8/gviz/tq?tqx=out:json";
 let selectedGroup = null;
+let isPlaying = false;
 
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
@@ -70,7 +70,6 @@ async function fetchSheet() {
       const groupDiv = document.createElement("div");
       groupDiv.className = "group";
 
-      // Headline list items
       const listItems = grouped[date].map(d => 
         `<li><strong>${d.name}:</strong> ${d.msg}</li>`
       ).join("");
@@ -80,7 +79,6 @@ async function fetchSheet() {
         <ul>${listItems}</ul>
       `;
 
-      // Click to select group
       groupDiv.addEventListener("click", ()=>{
         document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
         groupDiv.classList.add("selected");
@@ -95,19 +93,21 @@ async function fetchSheet() {
   }
 }
 
-// 🔹 Play Button Logic (reads only selected date group)
+// 🔹 Play Button Logic
 const mainPlayBtn = document.getElementById("mainPlayBtn");
 
 mainPlayBtn.addEventListener("click", () => {
-  if (!selectedGroup) {
-    alert("कृपया पहले किसी date group पर क्लिक करें!");
+  // अगर बोल रहा है तो रोक दो
+  if (isPlaying) {
+    window.speechSynthesis.cancel();
+    isPlaying = false;
+    mainPlayBtn.innerText = "▶️";
     return;
   }
 
-  // अगर पहले से बोल रहा है → रोक दो
-  if (window.speechSynthesis.speaking) {
-    window.speechSynthesis.cancel();
-    mainPlayBtn.innerText = "▶️";
+  // अगर कोई group select नहीं किया
+  if (!selectedGroup) {
+    alert("कृपया पहले किसी date group पर क्लिक करें!");
     return;
   }
 
@@ -120,11 +120,14 @@ mainPlayBtn.addEventListener("click", () => {
     return;
   }
 
+  // ✅ अब play शुरू करो
+  isPlaying = true;
   mainPlayBtn.innerText = "⏹️";
-  let i = 0;
 
+  let i = 0;
   const speakNext = () => {
-    if (i >= texts.length) {
+    if (!isPlaying || i >= texts.length) {
+      isPlaying = false;
       mainPlayBtn.innerText = "▶️";
       return;
     }
@@ -134,8 +137,18 @@ mainPlayBtn.addEventListener("click", () => {
     utter.rate = 1;
     utter.pitch = 1;
 
-    utter.onend = () => { i++; speakNext(); };
-    utter.onerror = (err) => { console.error("Speech error:", err); i++; speakNext(); };
+    utter.onend = () => {
+      if (isPlaying) {
+        i++;
+        speakNext();
+      }
+    };
+    utter.onerror = (err) => {
+      console.error("Speech error:", err);
+      i++;
+      speakNext();
+    };
+
     window.speechSynthesis.speak(utter);
   };
 
