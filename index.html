@@ -267,10 +267,17 @@ mainPlayBtn.addEventListener("click", () => {
     alert("कृपया पहले किसी date group पर क्लिक करें!");
     return;
   }
-
+/*
   const header = selectedGroup.querySelector(".dateHeader");
   const headerText = header ? header.textContent.trim() : "";
-
+*/
+  const banner = selectedGroup.querySelector(".banner");
+let headerText = "";
+if (banner) {
+  const dateLine = banner.querySelector(".date-line")?.textContent.trim() || "";
+  const welcomeLine = banner.querySelector(".welcome-line")?.textContent.trim() || "";
+  headerText = `${dateLine}. ${welcomeLine}`;
+}
   const lines = selectedGroup.querySelectorAll(".headline");
   const headlines = Array.from(lines).map(el => el.innerText.trim()).filter(t => t);
 
