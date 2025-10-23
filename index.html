@@ -236,7 +236,11 @@ groupDiv.innerHTML = `
 
       container.appendChild(groupDiv);
     });
-
+// After appending all groups
+const allGroups = container.querySelectorAll(".group");
+allGroups.forEach((g, i) => {
+  if (i >= 4) g.classList.add("hidden");
+});
     // Double-click to open link
     document.querySelectorAll(".headline").forEach(item => {
       item.addEventListener("dblclick", e => {
