@@ -258,6 +258,7 @@ mainPlayBtn.addEventListener("click", ()=>{
   }
 
   // Get all text inside selected card
+  const group = selectedCard.closest(".group");  // पूरे date group को पकड़ो
   const lines = selectedCard.querySelectorAll(".name");
   const texts = Array.from(lines).map(l => l.innerText.trim()).filter(t => t);
 
