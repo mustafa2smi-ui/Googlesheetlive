@@ -51,8 +51,8 @@ async function fetchSheet() {
 
     const data = rows.map(r => ({
       date: r.c[0]?.v || "",
-      name: r.c[1]?.v || "",
-      msg: r.c[2]?.v || ""
+      title: r.c[1]?.v || "",
+      link: r.c[2]?.v || "" // अब link (Column C) hidden रहेगा
     }));
 
     // Group by Date
@@ -70,8 +70,11 @@ async function fetchSheet() {
       const groupDiv = document.createElement("div");
       groupDiv.className = "group";
 
+      // 🔹 अब केवल title दिखेगा, link hidden रहेगा (dataset में store रहेगा)
       const listItems = grouped[date].map(d => 
-        `<li><strong>${d.name}:</strong> ${d.msg}</li>`
+        `<li class="headline" data-link="${d.link}">
+           ${d.title}
+         </li>`
       ).join("");
 
       groupDiv.innerHTML = `
@@ -79,6 +82,7 @@ async function fetchSheet() {
         <ul>${listItems}</ul>
       `;
 
+      // जब group पर click करें → select करें
       groupDiv.addEventListener("click", ()=>{
         document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
         groupDiv.classList.add("selected");
@@ -86,6 +90,19 @@ async function fetchSheet() {
       });
 
       container.appendChild(groupDiv);
+    });
+
+    // 🔹 अब हर headline को double-click पर open करें
+    document.querySelectorAll(".headline").forEach(item => {
+      item.addEventListener("dblclick", (e)=>{
+        e.stopPropagation();
+        const link = item.dataset.link;
+        if (link && link.startsWith("http")) {
+          window.open(link, "_blank");
+        } else {
+          alert("No valid link found for this headline!");
+        }
+      });
     });
 
   } catch (err) {
@@ -112,7 +129,7 @@ mainPlayBtn.addEventListener("click", () => {
   }
 
   // अब सिर्फ selected group की lines पढ़ो
-  const lines = selectedGroup.querySelectorAll("li");
+  const lines = selectedGroup.querySelectorAll(".headline");
   const texts = Array.from(lines).map(el => el.innerText.trim()).filter(t => t.length > 0);
 
   if (texts.length === 0) {
