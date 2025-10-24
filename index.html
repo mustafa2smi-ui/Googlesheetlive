@@ -584,6 +584,10 @@ const navLinks = document.getElementById("navLinks");
 menuToggle.addEventListener("click", () => {
   navLinks.classList.toggle("active");
 });
+            // 🟥 Close button action
+document.getElementById('close-menu-btn').addEventListener('click', () => {
+  document.getElementById('navLinks').classList.remove('show');
+});
 </script>
   <!-- 🔁 Auto-Scroll Affiliate Section -->
 <div class="affiliate-section">
