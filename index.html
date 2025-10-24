@@ -1,8 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>माईकन्यूज़123 - आज की ताज़ा सुर्खियां</title>
+
+  <!-- ✅ Static Fallback Description -->
+  <meta name="description" content="माईकन्यूज़123 में आपका स्वागत है। रोज़ाना Google Sheet से लाइव अपडेटेड ताज़ा और विश्वसनीय समाचार।">
+
+  
+
+  
 <title>📅 Date-wise Google Sheet Data</title>
 <style>
 body { font-family: "Segoe UI", sans-serif; background: #f4f6f8; margin:0; padding:20px; }
@@ -322,6 +330,8 @@ footer a:hover {
   }
 }
 </style>
+  <!-- 🖼️ Favicon -->
+  <link rel="icon" href="https://yourusername.github.io/micnews123/favicon.png" type="image/png">
 </head>
 <body>
   <!--
@@ -640,6 +650,42 @@ menuToggle.addEventListener("click", () => {
 closeMenu.addEventListener("click", () => {
   navLinks.classList.remove("active");
 });
+            <!-- 🔹 Dynamic OG Meta Tags (Auto Date Update) -->
+  
+    const today = new Date();
+    const months = ["जनवरी","फ़रवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+    const formattedDate = `${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+
+    const title = `माईकन्यूज़123 - ${formattedDate} की ताज़ा सुर्खियां`;
+    const description = `आज (${formattedDate}) की मुख्य सुर्खियां पढ़ें। Google Sheet से लाइव अपडेटेड हिंदी न्यूज़।`;
+    const siteURL = window.location.href.split('?')[0];
+    const imageURL = "https://yourusername.github.io/micnews123/images/og-image.jpg"; // 🔸 Replace with your image path
+
+    // Dynamically create meta tags
+    const metaTags = [
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:image", content: imageURL },
+      { property: "og:url", content: siteURL },
+      { property: "og:type", content: "website" },
+      { property: "og:locale", content: "hi_IN" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+      { name: "twitter:image", content: imageURL }
+    ];
+
+    metaTags.forEach(tag => {
+      const el = document.createElement('meta');
+      if (tag.property) el.setAttribute('property', tag.property);
+      if (tag.name) el.setAttribute('name', tag.name);
+      el.setAttribute('content', tag.content);
+      document.head.appendChild(el);
+    });
+
+    // Also update <title> dynamically
+    document.title = title;
+    
 </script>
   <!-- 🔁 Auto-Scroll Affiliate Section -->
 <div class="affiliate-section">
