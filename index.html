@@ -275,15 +275,22 @@ h1 { text-align:center; color:#333; }
             margin-bottom: 20px;
             color: #58a6ff;
 }
-  .close-menu-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 2rem;
-    cursor: pointer;
-  }
+  /* Close button */
+.close-btn {
+  background: red;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 5px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  background: darkred;
+}
 </style>
 </head>
 <body>
@@ -301,11 +308,12 @@ h1 { text-align:center; color:#333; }
   <div class="nav-title">🗞️ माईकन्यूज़123</div>
   <div class="menu-toggle" id="menuToggle">☰</div>
   <ul class="nav-links" id="navLinks">
-    <button class="close-menu-btn" id="close-menu-btn">&times;</button>
     <li><a href="#home">मुख्य समाचार</a></li>
     <li><a href="#sports">खेल</a></li>
     <li><a href="#tech">टेक्नोलॉजी</a></li>
     <li><a href="#contact">संपर्क</a></li>
+    <li>  <button id="closeBtn" class="close-btn">Close ❌</button>
+</li>
   </ul>
 </nav>
  <!-- <button onclick="shareSite()">Share Site 🌐</button>-->
@@ -577,6 +585,7 @@ const shareText = `🎤Taza Breaking News\n\n${dateHeader}\n\n${texts.join("\n")
     prompt("Aapka device share support nahi karta. Copy karein:", shareText + "\n\nLink: " + window.location.href);
   });
             }
+            /*
             // 🧭 Menu Toggle for mobile
 const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
@@ -584,9 +593,21 @@ const navLinks = document.getElementById("navLinks");
 menuToggle.addEventListener("click", () => {
   navLinks.classList.toggle("active");
 });
-            // 🟥 Close button action
-document.getElementById('close-menu-btn').addEventListener('click', () => {
-  document.getElementById('navbar').classList.remove('show');
+*/
+            
+  // 🧭 Menu Toggle for mobile
+const menuToggle = document.getElementById("menuToggle");
+const navLinks = document.getElementById("navLinks");
+const closeMenu = document.getElementById("closeMenu");
+
+// जब ☰ पर क्लिक हो → menu open
+menuToggle.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+});
+
+// जब ❌ Close पर क्लिक हो → menu hide
+closeMenu.addEventListener("click", () => {
+  navLinks.classList.remove("active");
 });
 </script>
   <!-- 🔁 Auto-Scroll Affiliate Section -->
