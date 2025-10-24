@@ -261,6 +261,17 @@ h1 { text-align:center; color:#333; }
   border-radius: 8px;
   cursor: pointer;
 }
+  .hero-section {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://via.placeholder.com/900x400') no-repeat center center/cover;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.hero-content h1 {
+    font-size: 2.5rem;
+}
 </style>
 </head>
 <body>
@@ -285,7 +296,14 @@ h1 { text-align:center; color:#333; }
   </ul>
 </nav>
  <!-- <button onclick="shareSite()">Share Site 🌐</button>-->
-<h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
+<!--<h1>📄 Live Google Sheet (Date-wise Grouped)</h1>
+  -->
+  <section class="hero-section">
+        <div class="hero-content">
+            <h1>MicNews123</h1>
+            <p>Your daily dose of lightweight news.</p>
+        </div>
+  </section>
 <div id="dataContainer">Loading...</div>
   <button id="showMoreBtn" onclick="showMore()">Show More</button>
 <p class="refreshNote">Auto-refreshes every 15 seconds</p>
