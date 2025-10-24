@@ -315,6 +315,12 @@ footer a:hover {
 .close-btn:hover {
   background: darkred;
 }
+  /* ❌ Hide Close button completely in desktop */
+@media (min-width: 769px) {
+  .close-btn {
+    display: none !important;
+  }
+}
 </style>
 </head>
 <body>
