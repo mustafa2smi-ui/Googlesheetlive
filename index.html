@@ -592,6 +592,7 @@ setInterval(fetchSheet, 300000);
   navigator.share(shareData).catch(console.error);
             }
             */
+            /*
             function shareSite() {
   if (!selectedGroup) {
     alert("Koi card select nahi hai! Pure site ka link share karein.");
@@ -615,7 +616,7 @@ setInterval(fetchSheet, 300000);
   // Intro line + headlines combine
   const dateHeader = selectedGroup.querySelector(".dateHeader")?.innerText || "";
   /*const shareText = `${dateHeader}\n\n${texts.join("\n")}`;*/
-const shareText = `🎤Taza Breaking News\n\n${dateHeader}\n\n${texts.join("\n")}`;
+/* const shareText = `🎤Taza Breaking News\n\n${dateHeader}\n\n${texts.join("\n")}`;
   const shareData = {
     title: "MicNews123 - Selected Headlines",
     text: shareText,
@@ -626,6 +627,63 @@ const shareText = `🎤Taza Breaking News\n\n${dateHeader}\n\n${texts.join("\n")
     prompt("Aapka device share support nahi karta. Copy karein:", shareText + "\n\nLink: " + window.location.href);
   });
             }
+            */
+            // Function to handle sharing of the selected group or the site link
+function shareSite() {
+  // Check if Web Share API is supported
+  if (!navigator.share) {
+    let fallbackText = "कृपया लिंक और सुर्खियां मैन्युअल रूप से कॉपी करें।\n";
+    if (selectedGroup) {
+      const banner = selectedGroup.querySelector(".banner");
+      const dateHeader = banner ? (banner.querySelector(".date-line")?.textContent.trim() || "") : "आज की ताजा सुर्खियां";
+      const headlines = selectedGroup.querySelectorAll(".headline");
+      const texts = Array.from(headlines)
+                           .map(h => `• ${h.innerText.trim()}`)
+                           .filter(t => t.length > 0);
+      
+      fallbackText = `🎤 *MicNews123 - ${dateHeader}* 🎤\n\n${texts.join("\n")}\n\n`;
+    }
+    
+    // Fallback for non-supporting devices (e.g., desktop browsers)
+    prompt(fallbackText, window.location.href);
+    return;
+  }
+  
+  // --- Web Share API Logic ---
+  let shareTitle = "🗞️ MicNews123 - ताज़ा सुर्खियां";
+  let shareText = "Google Sheet से लाइव अपडेटेड, रोज़ाना की ताज़ा और विश्वसनीय ख़बरें पढ़ें।";
+  let shareUrl = window.location.href.split('?')[0]; // Clean URL
+  
+  if (selectedGroup) {
+    const banner = selectedGroup.querySelector(".banner");
+    const dateHeader = banner ? (banner.querySelector(".date-line")?.textContent.trim() || "") : "";
+    
+    // Collect Headlines
+    const headlines = selectedGroup.querySelectorAll(".headline");
+    const texts = Array.from(headlines)
+                       .map(h => `• ${h.innerText.trim()}`)
+                       .filter(t => t.length > 0);
+
+    shareTitle = `🗞️ आज की मुख्य सुर्खियां - ${dateHeader}`;
+    shareText = `🎤 *MicNews123 - ${dateHeader}* 🎤\n\n${texts.join("\n")}\n\n`;
+  } else {
+    // If no group is selected, use the general page title/description
+    shareTitle = document.title;
+    shareText = document.querySelector('meta[name="description"]')?.content || shareText;
+  }
+  
+  const shareData = {
+    title: shareTitle,
+    text: shareText,
+    url: shareUrl
+  };
+  
+  navigator.share(shareData).catch(error => {
+    // This catches user cancellation or any failure
+    console.error("Sharing failed:", error);
+  });
+}
+            
             /*
             // 🧭 Menu Toggle for mobile
 const menuToggle = document.getElementById("menuToggle");
