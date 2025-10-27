@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="canonical" href="https://yourusername.github.io/micnews123/"> 
+  <link rel="manifest" href="manifest.json"> 
+
+    
   <title>माईकन्यूज़123 - आज की ताज़ा सुर्खियां</title>
 
   <!-- ✅ Static Fallback Description -->
@@ -188,7 +191,7 @@ h1 { text-align:center; color:#333; }
   }
 }
 
-/* 🔁 Affiliate Scroll Section */
+/* 🔁 Affiliate Scroll Section 
 .affiliate-section {
   width: 100%;
   overflow: hidden;
@@ -227,7 +230,7 @@ h1 { text-align:center; color:#333; }
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-  
+  */
   .footer {
   text-align: center;
   padding: 12px;
@@ -876,7 +879,31 @@ closeMenu.addEventListener("click", () => {
     document.title = title;
     
 </script>
-  <!-- 🔁 Auto-Scroll Affiliate Section -->
+  <script>
+// (आपका मौजूदा JavaScript कोड यहाँ है)
+// ...
+
+// ------------------------------------------------------------------
+// ✅ Service Worker Registration (PWA Offline Setup)
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // 🔴 सुनिश्चित करें कि पाथ सही हो (e.g., /micnews123/service-worker.js)
+    navigator.serviceWorker.register('/micnews123/service-worker.js')
+      .then(reg => {
+        console.log('Service Worker Registered successfully: ', reg.scope);
+      })
+      .catch(err => {
+        console.log('Service Worker registration failed: ', err);
+      });
+  });
+}
+// ------------------------------------------------------------------
+
+// (आपका Dynamic Meta Tags का कोड यहाँ है)
+// ...
+  </script>
+  
+  <!-- 🔁 Auto-Scroll Affiliate Section 
 <div class="affiliate-section">
   <div class="scroll-container" id="scrollContainer">
     <div class="ad-card">
@@ -890,6 +917,7 @@ closeMenu.addEventListener("click", () => {
     </div>
   </div>
 </div>
+  -->
   <footer class="footer">
         <p>© 2025 My News Site | <a href="#">Home</a> | <a href="About.html">About</a> | <a href="Contact.html">Contact</a></p>
     
