@@ -1,0 +1,5 @@
+# Ensure all HTTP traffic goes to HTTPS
+http://* https://:splat 301!
+
+# Ensure the preferred domain is used (e.g., redirect www to non-www)
+https://www.yourdomain.com/* https://yourdomain.com/:splat 301!
