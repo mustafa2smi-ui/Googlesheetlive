@@ -447,9 +447,15 @@ async function fetchSheet() {
       }
 
       // Headlines
-      const listItems = grouped[date].map(d =>
+    /*  const listItems = grouped[date].map(d =>
         `<li class="headline" data-link="${d.link}">${d.title}</li>`
       ).join("");
+      */
+            const listItems = grouped[date].map(d =>
+        // ✅ ध्यान दें: d.title और d.link दोनों को escapeHTML से गुज़ारें
+        `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
+      ).join("");
+      
 /*
       // Header + Headlines
       groupDiv.innerHTML = `
@@ -877,7 +883,20 @@ closeMenu.addEventListener("click", () => {
 
     // Also update <title> dynamically
     document.title = title;
-    
+    // यह फ़ंक्शन किसी भी HTML कैरेक्टर को सुरक्षित एंटिटी में बदल देता है
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>"']/g, function(m) {
+        return ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[m]);
+    });
+}
+            
 </script>
   <script>
 // (आपका मौजूदा JavaScript कोड यहाँ है)
