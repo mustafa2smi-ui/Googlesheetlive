@@ -687,6 +687,7 @@ setInterval(fetchSheet, 300000);
   });
             }
             */
+            /*
             // Function to handle sharing of the selected group or the site link
 function shareSite() {
   // Check if Web Share API is supported
@@ -728,6 +729,72 @@ function shareSite() {
                        .filter(t => t.length > 3); // खाली या बहुत छोटे टेक्स्ट को फ़िल्टर करें
                        
 
+    shareTitle = `🗞️ आज की मुख्य सुर्खियां - ${dateHeader}`;
+    shareText = `🎤 *MicNews123 - ${dateHeader}* 🎤\n\n${texts.join("\n")}\n\n`;
+  } else {
+    // If no group is selected, use the general page title/description
+    shareTitle = document.title;
+    shareText = document.querySelector('meta[name="description"]')?.content || shareText;
+  }
+  
+  const shareData = {
+    title: shareTitle,
+    text: shareText,
+    url: shareUrl
+  };
+  
+  navigator.share(shareData).catch(error => {
+    // This catches user cancellation or any failure
+    console.error("Sharing failed:", error);
+  });
+}
+        */   
+            // Function to handle sharing of the selected group or the site link
+function shareSite() {
+  // Check if Web Share API is supported
+  if (!navigator.share) {
+    let fallbackText = "कृपया लिंक और सुर्खियां मैन्युअल रूप से कॉपी करें।\n";
+    if (selectedGroup) {
+      const banner = selectedGroup.querySelector(".banner");
+      const dateHeader = banner ? (banner.querySelector(".date-line")?.textContent.trim() || "") : "आज की ताजा सुर्खियां";
+      const headlines = selectedGroup.querySelectorAll(".headline");
+      const texts = Array.from(headlines)
+                           .map(h => {
+                               const fullText = h.innerText.trim();
+                               // ✅ सही बदलाव: केवल पहले 70-80 अक्षर ही लें (या पहला वाक्य)
+                               const snippet = fullText.length > 70 ? fullText.substring(0, 70) + '...' : fullText;
+                               return `• ${snippet}`; // स्निपेट को बुलेट पॉइंट के साथ जोड़ें
+                           })
+                           .filter(t => t.length > 3); // खाली या बहुत छोटे टेक्स्ट को फ़िल्टर करें
+      
+      fallbackText = `🎤 *MicNews123 - ${dateHeader}* 🎤\n\n${texts.join("\n")}\n\n`;
+    }
+    
+    // Fallback for non-supporting devices (e.g., desktop browsers)
+    prompt(fallbackText, window.location.href.split('?')[0]);
+    return;
+  }
+  
+  // --- Web Share API Logic ---
+  let shareTitle = "🗞️ MicNews123 - ताज़ा सुर्खियां";
+  let shareText = "Google Sheet से लाइव अपडेटेड, रोज़ाना की ताज़ा और विश्वसनीय ख़बरें पढ़ें।";
+  let shareUrl = window.location.href.split('?')[0]; // Clean URL
+  
+  if (selectedGroup) {
+    const banner = selectedGroup.querySelector(".banner");
+    const dateHeader = banner ? (banner.querySelector(".date-line")?.textContent.trim() || "") : "";
+    
+    // Collect Headlines
+    const headlines = selectedGroup.querySelectorAll(".headline");
+    const texts = Array.from(headlines)
+                       .map(h => {
+                         const fullText = h.innerText.trim();
+                         // ✅ सही बदलाव: केवल पहले 70-80 अक्षर ही लें
+                         const snippet = fullText.length > 70 ? fullText.substring(0, 70) + '...' : fullText;
+                         return `• ${snippet}`; // स्निपेट को बुलेट पॉइंट के साथ जोड़ें
+                       })
+                       .filter(t => t.length > 3); // खाली या बहुत छोटे टेक्स्ट को फ़िल्टर करें
+                       
     shareTitle = `🗞️ आज की मुख्य सुर्खियां - ${dateHeader}`;
     shareText = `🎤 *MicNews123 - ${dateHeader}* 🎤\n\n${texts.join("\n")}\n\n`;
   } else {
