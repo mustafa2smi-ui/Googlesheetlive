@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="canonical" href="https://yourusername.github.io/micnews123/"> 
   <title>माईकन्यूज़123 - आज की ताज़ा सुर्खियां</title>
 
   <!-- ✅ Static Fallback Description -->
@@ -496,7 +497,69 @@ allGroups.forEach((g, i) => {
         }
       });
     });
+    // ... fetchSheet() function के अंदर, UI रेंडरिंग के बाद ...
 
+    // --- Schema Markup Implementation (JSON-LD) ---
+    
+    // 1. NewsArticle Schema (प्रत्येक ग्रुप के लिए एक लेख)
+    const allGroupsData = Object.keys(grouped).map(date => {
+      const groupData = grouped[date];
+      const firstHeadline = groupData[0]?.title || "माईकन्यूज़123 ताज़ा खबर";
+      
+      // Date Formatting (Schema के लिए ISO फॉर्मेट YYYY-MM-DD चाहिए)
+      let isoDate = "";
+      try {
+          const dateObj = new Date(date);
+          if (!isNaN(dateObj)) {
+              isoDate = dateObj.toISOString().split('T')[0];
+          }
+      } catch (e) {}
+
+      return {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": firstHeadline, // ग्रुप की पहली हेडलाइन को मुख्य हेडलाइन बनाएं
+        "datePublished": isoDate || new Date().toISOString(),
+        "dateModified": new Date().toISOString(),
+        "image": {
+          "@type": "ImageObject",
+          "url": "https://yourusername.github.io/micnews123/images/og-image.jpg" // अपनी OG Image URL यहाँ डालें
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "MicNews123"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "MicNews123",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://yourusername.github.io/micnews123/favicon.png" // अपनी favicon URL यहाँ डालें
+          }
+        },
+        "description": groupData.map(d => d.title).join(" | ") // सभी हेडलाइंस को डिस्क्रिप्शन में जोड़ें
+      };
+    });
+
+    // 2. Add JSON-LD script to the head
+    const oldScript = document.getElementById('newsSchema');
+    if (oldScript) oldScript.remove(); // पुराने स्कीमा को हटा दें
+
+    const schemaScript = document.createElement('script');
+    schemaScript.setAttribute('type', 'application/ld+json');
+    schemaScript.setAttribute('id', 'newsSchema');
+    // Schema Markup को एक array के रूप में जोड़ें
+    schemaScript.textContent = JSON.stringify(allGroupsData, null, 2); 
+    
+    document.head.appendChild(schemaScript);
+
+    // ... fetchSheet() function का अंत
+    
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+        }
+            
   } catch (err) {
     console.error("Error fetching sheet:", err);
   }
