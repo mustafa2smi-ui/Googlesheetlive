@@ -721,7 +721,12 @@ function shareSite() {
     const headlines = selectedGroup.querySelectorAll(".headline");
     const texts = Array.from(headlines)
                        .map(h => `• ${h.innerText.trim()}`)
-                       .filter(t => t.length > 0);
+       // ✅ यहाँ बदलाव करें: केवल पहले 70-80 अक्षर ही लें (या पहला वाक्य)
+                         const snippet = fullText.length > 70 ? fullText.substring(0, 70) + '...' : fullText;
+                         return `• ${snippet}`; // स्निपेट को बुलेट पॉइंट के साथ जोड़ें
+                       })
+                       .filter(t => t.length > 3); // खाली या बहुत छोटे टेक्स्ट को फ़िल्टर करें
+                       
 
     shareTitle = `🗞️ आज की मुख्य सुर्खियां - ${dateHeader}`;
     shareText = `🎤 *MicNews123 - ${dateHeader}* 🎤\n\n${texts.join("\n")}\n\n`;
