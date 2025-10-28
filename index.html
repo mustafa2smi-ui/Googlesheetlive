@@ -445,7 +445,20 @@ footer a:hover {
 const sheetURL = "https://docs.google.com/spreadsheets/d/1DtRlkaP23ihYmN8mn4Gx7deLicpVhDY6AiY-bN5pqt8/gviz/tq?tqx=out:json";
 let selectedGroup = null;
 let isPlaying = false;
-
+// Function for XSS Security (इसे fetchSheet से पहले जोड़ें)
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>"']/g, function(m) {
+        return ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[m]);
+    });
+}
+            /*
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
   try {
@@ -513,7 +526,7 @@ async function fetchSheet() {
     /*  const listItems = grouped[date].map(d =>
         `<li class="headline" data-link="${d.link}">${d.title}</li>`
       ).join("");
-      */
+      *//*
             const listItems = grouped[date].map(d =>
         // ✅ ध्यान दें: d.title और d.link दोनों को escapeHTML से गुज़ारें
         `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
@@ -535,7 +548,7 @@ async function fetchSheet() {
   month: 'long',
   year: 'numeric'
 });
-*/
+*//*
 groupDiv.innerHTML = `
   <div class="banner">
     <div class="date-line">${formattedDate}</div>
@@ -628,6 +641,218 @@ allGroups.forEach((g, i) => {
     // ... fetchSheet() function का अंत
     
             
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+}
+*/
+            async function fetchSheet() {
+  try {
+    const res = await fetch(sheetURL);
+    const text = await res.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    const currentTime = new Date().getTime();
+    // 1 घंटा (60 मिनट) मिलीसेकंड में
+    const oneHour = 60 * 60 * 1000; 
+    const excelEpoch = new Date(1899, 11, 30);
+    
+    // --- 1. डेटा को मैपिंग और Fresh/Archived में बाँटना ---
+    const allData = rows.map(r => {
+      // Column A (Date & Time) का सीरियल नंबर
+      const dateSerial = r.c[0]?.v || 0; 
+      const title = r.c[1]?.v || "";      
+      const link = r.c[2]?.v || "";       
+      
+      // Google Serial Date को सटीक JavaScript Date/Time में बदलें
+      const publishDate = new Date(excelEpoch.getTime() + dateSerial * 86400000);
+
+      return {
+        // 'en-US' का उपयोग करें ताकि date-only grouping key clean हो
+        dateKey: publishDate.toLocaleDateString('en-US'), 
+        timestamp: publishDate.getTime(), // Filtering Key (Exact time)
+        title: title,
+        link: link
+      };
+    });
+
+    const freshNews = [];
+    let archivedNews = [];
+
+    allData.forEach(item => {
+      // अगर पब्लिश टाइम और करंट टाइम में 1 घंटे से कम का अंतर है, तो ताज़ा खबर
+      // *86400000 से divide करने पर यह 1970-युग से मिलीसेकंड नहीं रहेगा, इसलिए
+      // हम सीधे timestamp का उपयोग करके अंतर निकाल रहे हैं, जो सही है।
+      if (currentTime - item.timestamp < oneHour) {
+        freshNews.push(item);
+      } else {
+        archivedNews.push(item);
+      }
+    });
+    
+    // --- 2. Fresh Breaking News Section रेंडर करना (#breakingNewsContainer) ---
+    const freshContainer = document.getElementById("breakingNewsContainer");
+    freshContainer.innerHTML = ""; // पहले खाली करें
+
+    if (freshNews.length > 0) {
+      // ताज़ा खबरें सबसे ऊपर दिखानी हैं, इसलिए टाइमस्टैम्प के हिसाब से सॉर्ट करें
+      freshNews.sort((a, b) => b.timestamp - a.timestamp);
+
+      const freshList = freshNews.map(d => 
+        // XSS सुरक्षित तरीके से रेंडर करें
+        `<li class="breaking-headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
+      ).join("");
+
+      freshContainer.innerHTML = `
+        <h2>⚡ Fresh Breaking News Headlines</h2>
+        <ul>${freshList}</ul>
+      `;
+      
+      // Fresh News पर डबल-क्लिक लॉजिक
+      freshContainer.querySelectorAll(".breaking-headline").forEach(item => {
+          item.addEventListener("dblclick", e => {
+              e.stopPropagation();
+              const link = item.dataset.link;
+              if (link && link.startsWith("http")) {
+                window.open(link, "_blank");
+              } else {
+                alert("No valid link found for this headline!");
+              }
+          });
+      });
+      
+    } else {
+      // 1 घंटे में कोई ताज़ा खबर नहीं है
+      freshContainer.innerHTML = `
+        <p class="no-breaking-news">अभी कोई ताज़ा खबर नहीं है।</p>
+      `;
+    }
+
+    // --- 3. Archived Date-wise Grouped Section रेंडर करना (#dataContainer) ---
+
+    // Archived Data को Date-wise Group करें
+    const grouped = {};
+    archivedNews.forEach(item => {
+      if (!grouped[item.dateKey]) grouped[item.dateKey] = [];
+      grouped[item.dateKey].push(item);
+    });
+
+    const container = document.getElementById("dataContainer");
+    container.innerHTML = "";
+    const allGroupsData = [];
+    
+    // Grouped Data को UI में रेंडर करना
+    Object.keys(grouped).forEach(date => {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "group";
+      
+      const dateObj = new Date(date);
+      let formattedDate = dateObj.toLocaleDateString("hi-IN", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+      });
+
+      // Headlines
+      const listItems = grouped[date].map(d =>
+        // XSS सुरक्षित तरीके से रेंडर करें
+        `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
+      ).join("");
+
+      groupDiv.innerHTML = `
+        <div class="banner">
+          <div class="date-line">${formattedDate}</div>
+          <div class="welcome-line">🗞️ माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां।</div>
+        </div>
+        <ul>${listItems}</ul>
+      `;
+      
+      // Select logic
+      groupDiv.addEventListener("click", () => {
+        document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
+        groupDiv.classList.add("selected");
+        selectedGroup = groupDiv;
+      });
+
+      container.appendChild(groupDiv);
+      
+      // Schema Markup के लिए डेटा कलेक्ट करना
+      allGroupsData.push({
+          date: date, 
+          data: grouped[date]
+      });
+    });
+
+    // Hidden Groups Logic
+    const allGroups = container.querySelectorAll(".group");
+    allGroups.forEach((g, i) => {
+      if (i >= 4) g.classList.add("hidden");
+    });
+    
+    // Double-click to open link Logic for Archived News
+    document.querySelectorAll(".headline").forEach(item => {
+      item.addEventListener("dblclick", e => {
+        e.stopPropagation();
+        const link = item.dataset.link;
+        if (link && link.startsWith("http")) {
+          window.open(link, "_blank");
+        } else {
+          alert("No valid link found for this headline!");
+        }
+      });
+    });
+
+    // --- 4. Schema Markup Implementation (JSON-LD) ---
+    const schemaMarkupArray = allGroupsData.map(group => {
+      const groupData = group.data;
+      const firstHeadline = groupData[0]?.title || "माईकन्यूज़123 ताज़ा खबर";
+      
+      let isoDate = "";
+      try {
+          const dateObj = new Date(group.date);
+          if (!isNaN(dateObj)) {
+              isoDate = dateObj.toISOString().split('T')[0];
+          }
+      } catch (e) {}
+
+      return {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": escapeHTML(firstHeadline), 
+        "datePublished": isoDate || new Date().toISOString(),
+        "dateModified": new Date().toISOString(),
+        "image": {
+          "@type": "ImageObject",
+          "url": "https://raw.githubusercontent.com/mustafa2smi-ui/Googlesheetlive/main/newsmicc.jpg" 
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "MicNews123"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "MicNews123",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://raw.githubusercontent.com/mustafa2smi-ui/Googlesheetlive/main/newsmicc.jpg"
+          }
+        },
+        "description": escapeHTML(groupData.map(d => d.title).join(" | "))
+      };
+    });
+
+    const oldScript = document.getElementById('newsSchema');
+    if (oldScript) oldScript.remove(); 
+
+    const schemaScript = document.createElement('script');
+    schemaScript.setAttribute('type', 'application/ld+json');
+    schemaScript.setAttribute('id', 'newsSchema');
+    schemaScript.textContent = JSON.stringify(schemaMarkupArray, null, 2); 
+    
+    document.head.appendChild(schemaScript);
+    
   } catch (err) {
     console.error("Error fetching sheet:", err);
   }
