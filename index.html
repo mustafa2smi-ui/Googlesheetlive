@@ -349,6 +349,49 @@ footer a:hover {
     display: none !important;
   }
 }
+  /* आपके मौजूदा CSS में जोड़ें */
+#breakingNewsContainer {
+    max-width: 500px;
+    margin: 20px auto 10px auto;
+    padding: 15px;
+    border-radius: 12px;
+    background: #ffecb3; /* हल्का पीला बैकग्राउंड */
+    box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2);
+    border: 2px solid #ff9800;
+}
+
+#breakingNewsContainer h2 {
+    text-align: center;
+    color: #e65100;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+    padding-bottom: 5px;
+    border-bottom: 2px dashed #ff9800;
+}
+
+.breaking-headline {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+    font-weight: bold;
+    color: #333;
+    animation: fadeIn 0.5s ease-out;
+    border-bottom: 1px dotted #ccc;
+}
+
+.breaking-headline:last-child {
+    border-bottom: none;
+}
+
+/* अगर कोई ताज़ा खबर नहीं है तो मैसेज */
+.no-breaking-news {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 10px;
+}
+  
 </style>
   <!-- 🖼️ Favicon -->
   <link rel="icon" href="https://raw.githubusercontent.com/mustafa2smi-ui/Googlesheetlive/main/newsmicc.jpg" type="image/png">
@@ -386,6 +429,10 @@ footer a:hover {
             <p>Your daily dose of lightweight news.</p>
         </div>
   </section>
+  <div id="breakingNewsContainer">
+    </div>
+
+<div id="dataContainer">Loading...</div>
 <div id="dataContainer">Loading...</div>
   <button id="showMoreBtn" onclick="showMore()">Show More</button>
 <p class="refreshNote">Auto-refreshes every 5 Minutes</p>
