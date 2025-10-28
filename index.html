@@ -458,7 +458,7 @@ function escapeHTML(str) {
         }[m]);
     });
 }
-            /*
+            
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
   try {
@@ -526,7 +526,7 @@ async function fetchSheet() {
     /*  const listItems = grouped[date].map(d =>
         `<li class="headline" data-link="${d.link}">${d.title}</li>`
       ).join("");
-      *//*
+      */
             const listItems = grouped[date].map(d =>
         // ✅ ध्यान दें: d.title और d.link दोनों को escapeHTML से गुज़ारें
         `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
@@ -548,7 +548,7 @@ async function fetchSheet() {
   month: 'long',
   year: 'numeric'
 });
-*//*
+*/
 groupDiv.innerHTML = `
   <div class="banner">
     <div class="date-line">${formattedDate}</div>
@@ -645,7 +645,8 @@ allGroups.forEach((g, i) => {
     console.error("Error fetching sheet:", err);
   }
 }
-*/
+
+            /*
             async function fetchSheet() {
   try {
     const res = await fetch(sheetURL);
@@ -857,7 +858,7 @@ allGroups.forEach((g, i) => {
     console.error("Error fetching sheet:", err);
   }
 }
-
+*/
 // 🔊 Play Button Logic
 const mainPlayBtn = document.getElementById("mainPlayBtn");
 
