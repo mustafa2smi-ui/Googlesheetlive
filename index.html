@@ -437,6 +437,11 @@ footer a:hover {
     </div>
 
 <div id="dataContainer">Loading...</div>-->
+  <!-- 🔴 Fresh Breaking News Section -->
+<section id="fresh-section" class="fresh-news">
+  <h2>🟢 Fresh Breaking News</h2>
+  <div id="freshContainer">Loading fresh news...</div>
+</section>
 <div id="dataContainer">Loading...</div>
   <button id="showMoreBtn" onclick="showMore()">Show More</button>
 <p class="refreshNote">Auto-refreshes every 5 Minutes</p>
@@ -462,7 +467,7 @@ function escapeHTML(str) {
         }[m]);
     });
 }
-            
+            /*
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
   try {
@@ -530,7 +535,7 @@ async function fetchSheet() {
     /*  const listItems = grouped[date].map(d =>
         `<li class="headline" data-link="${d.link}">${d.title}</li>`
       ).join("");
-      */
+      *//*
             const listItems = grouped[date].map(d =>
         // ✅ ध्यान दें: d.title और d.link दोनों को escapeHTML से गुज़ारें
         `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
@@ -552,7 +557,7 @@ async function fetchSheet() {
   month: 'long',
   year: 'numeric'
 });
-*/
+*//*
 groupDiv.innerHTML = `
   <div class="banner">
     <div class="date-line">${formattedDate}</div>
@@ -649,7 +654,206 @@ allGroups.forEach((g, i) => {
     console.error("Error fetching sheet:", err);
   }
 }
+*/
+            async function fetchSheet() {
+  try {
+    const res = await fetch(sheetURL);
+    const text = await res.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
 
+    const data = rows.map(r => ({
+      date: r.c[0]?.v || "",  // Date + Time
+      title: r.c[1]?.v || "",
+      link: r.c[2]?.v || ""
+    }));
+
+    // 🕒 Current Time
+    const now = new Date();
+
+    // Split into Fresh (<1hr) and Normal News
+    const freshNews = [];
+    const normalNews = [];
+
+    data.forEach(item => {
+      const newsTime = new Date(item.date);
+      const diffHours = (now - newsTime) / (1000 * 60 * 60); // hours diff
+
+      if (!isNaN(newsTime) && diffHours <= 1) {
+        freshNews.push(item);
+      } else {
+        normalNews.push(item);
+      }
+    });
+
+    // 📰 Group Normal News by Date (existing logic)
+    const grouped = {};
+    normalNews.forEach(item => {
+      if (!grouped[item.date]) grouped[item.date] = [];
+      grouped[item.date].push(item);
+    });
+
+    const container = document.getElementById("dataContainer");
+    container.innerHTML = "";
+
+    // 🔴 FRESH BREAKING NEWS SECTION
+    const freshDiv = document.createElement("div");
+    freshDiv.className = "fresh-section";
+
+    const freshTitle = document.createElement("h2");
+    freshTitle.textContent = "🆕 Fresh Breaking News Headline";
+    freshDiv.appendChild(freshTitle);
+
+    const freshList = document.createElement("ul");
+
+    if (freshNews.length === 0) {
+      const msg = document.createElement("div");
+      msg.className = "no-news";
+      msg.textContent = "🕒 Abhi Koi Taza News Nahi Hai";
+      freshDiv.appendChild(msg);
+    } else {
+      freshNews.forEach(d => {
+        const li = document.createElement("li");
+        li.className = "headline fresh";
+        li.dataset.link = d.link;
+        li.textContent = d.title;
+        freshList.appendChild(li);
+      });
+      freshDiv.appendChild(freshList);
+    }
+
+    container.appendChild(freshDiv);
+
+    // 🟡 OLD (Grouped) NEWS SECTION
+    Object.keys(grouped).forEach(date => {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "group";
+
+      let formattedDate = "";
+      try {
+        let dateObj;
+        if (typeof date === "string" && date.startsWith("Date(")) {
+          const parts = date.match(/\d+/g);
+          if (parts && parts.length >= 3) {
+            const y = parseInt(parts[0]);
+            const m = parseInt(parts[1]);
+            const d = parseInt(parts[2]);
+            dateObj = new Date(y, m, d);
+          }
+        } else if (typeof date === "number") {
+          const excelEpoch = new Date(1899, 11, 30);
+          dateObj = new Date(excelEpoch.getTime() + date * 86400000);
+        } else {
+          dateObj = new Date(date);
+        }
+
+        formattedDate = !isNaN(dateObj)
+          ? dateObj.toLocaleDateString("hi-IN", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric"
+            })
+          : date;
+      } catch {
+        formattedDate = date;
+      }
+
+      const listItems = grouped[date]
+        .map(
+          d =>
+            `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(
+              d.title
+            )}</li>`
+        )
+        .join("");
+
+      groupDiv.innerHTML = `
+        <div class="banner">
+          <div class="date-line">${formattedDate}</div>
+          <div class="welcome-line">🗞️ माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां।</div>
+        </div>
+        <ul>${listItems}</ul>
+      `;
+
+      groupDiv.addEventListener("click", () => {
+        document
+          .querySelectorAll(".group")
+          .forEach(g => g.classList.remove("selected"));
+        groupDiv.classList.add("selected");
+        selectedGroup = groupDiv;
+      });
+
+      container.appendChild(groupDiv);
+    });
+
+    // Hide extra groups if needed
+    const allGroups = container.querySelectorAll(".group");
+    allGroups.forEach((g, i) => {
+      if (i >= 4) g.classList.add("hidden");
+    });
+
+    // 🔗 Double-click to open headline link
+    document.querySelectorAll(".headline").forEach(item => {
+      item.addEventListener("dblclick", e => {
+        e.stopPropagation();
+        const link = item.dataset.link;
+        if (link && link.startsWith("http")) {
+          window.open(link, "_blank");
+        } else {
+          alert("No valid link found for this headline!");
+        }
+      });
+    });
+
+    // --- Schema Markup (same as before) ---
+    const allGroupsData = Object.keys(grouped).map(date => {
+      const groupData = grouped[date];
+      const firstHeadline = groupData[0]?.title || "माईकन्यूज़123 ताज़ा खबर";
+      let isoDate = "";
+      try {
+        const dateObj = new Date(date);
+        if (!isNaN(dateObj)) {
+          isoDate = dateObj.toISOString().split("T")[0];
+        }
+      } catch (e) {}
+
+      return {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: firstHeadline,
+        datePublished: isoDate || new Date().toISOString(),
+        dateModified: new Date().toISOString(),
+        image: {
+          "@type": "ImageObject",
+          url: "https://raw.githubusercontent.com/mustafa2smi-ui/Googlesheetlive/main/newsmicc.jpg"
+        },
+        author: { "@type": "Organization", name: "MicNews123" },
+        publisher: {
+          "@type": "Organization",
+          name: "MicNews123",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://raw.githubusercontent.com/mustafa2smi-ui/Googlesheetlive/main/newsmicc.jpg"
+          }
+        },
+        description: groupData.map(d => d.title).join(" | ")
+      };
+    });
+
+    const oldScript = document.getElementById("newsSchema");
+    if (oldScript) oldScript.remove();
+
+    const schemaScript = document.createElement("script");
+    schemaScript.setAttribute("type", "application/ld+json");
+    schemaScript.setAttribute("id", "newsSchema");
+    schemaScript.textContent = JSON.stringify(allGroupsData, null, 2);
+    document.head.appendChild(schemaScript);
+
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+}
             /*
             async function fetchSheet() {
   try {
