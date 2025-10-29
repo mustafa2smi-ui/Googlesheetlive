@@ -438,10 +438,18 @@ footer a:hover {
 
 <div id="dataContainer">Loading...</div>-->
   <!-- 🔴 Fresh Breaking News Section -->
+<!--<section id="fresh-section" class="fresh-news">
+  <h2>🟢 Fresh Breaking News</h2>
+  <div id="freshContainer">Loading fresh news...</div>
+</section>
+<div id="dataContainer">Loading...</div>-->
+  <!-- 🔴 Fresh Breaking News Section -->
 <section id="fresh-section" class="fresh-news">
   <h2>🟢 Fresh Breaking News</h2>
   <div id="freshContainer">Loading fresh news...</div>
 </section>
+
+<!-- 📰 Old Grouped News Section -->
 <div id="dataContainer">Loading...</div>
   <button id="showMoreBtn" onclick="showMore()">Show More</button>
 <p class="refreshNote">Auto-refreshes every 5 Minutes</p>
@@ -654,7 +662,7 @@ allGroups.forEach((g, i) => {
     console.error("Error fetching sheet:", err);
   }
 }
-*/
+*//*
             async function fetchSheet() {
   try {
     const res = await fetch(sheetURL);
@@ -854,6 +862,108 @@ allGroups.forEach((g, i) => {
     console.error("Error fetching sheet:", err);
   }
 }
+            */
+            async function fetchSheet() {
+  try {
+    const res = await fetch(sheetURL);
+    const text = await res.text();
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
+
+    // Sheet → Object
+    const data = rows.map(r => ({
+      date: r.c[0]?.v || "",  // Date+Time same cell
+      title: r.c[1]?.v || "",
+      link: r.c[2]?.v || ""
+    }));
+
+    // Current Time
+    const now = new Date();
+
+    const freshNews = [];
+    const normalNews = [];
+
+    data.forEach(item => {
+      const newsTime = new Date(item.date);
+      const diffHours = (now - newsTime) / (1000 * 60 * 60);
+      if (!isNaN(newsTime) && diffHours <= 1) {
+        freshNews.push(item);
+      } else {
+        normalNews.push(item);
+      }
+    });
+
+    // Containers
+    const freshContainer = document.getElementById("freshContainer");
+    const dataContainer = document.getElementById("dataContainer");
+
+    freshContainer.innerHTML = "";
+    dataContainer.innerHTML = "";
+
+    // 🆕 FRESH BREAKING NEWS
+    if (freshNews.length === 0) {
+      freshContainer.innerHTML = `<div class="no-news">🕒 Abhi Koi Taza News Nahi Hai</div>`;
+    } else {
+      const ul = document.createElement("ul");
+      freshNews.forEach(d => {
+        const li = document.createElement("li");
+        li.className = "headline fresh";
+        li.dataset.link = d.link;
+        li.textContent = d.title;
+        ul.appendChild(li);
+      });
+      freshContainer.appendChild(ul);
+    }
+
+    // 📰 OLD GROUPED NEWS
+    const grouped = {};
+    normalNews.forEach(item => {
+      if (!grouped[item.date]) grouped[item.date] = [];
+      grouped[item.date].push(item);
+    });
+
+    Object.keys(grouped).forEach(date => {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "group";
+
+      const formattedDate = new Date(date).toLocaleDateString("hi-IN", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      });
+
+      const listItems = grouped[date]
+        .map(d => `<li class="headline" data-link="${d.link}">${d.title}</li>`)
+        .join("");
+
+      groupDiv.innerHTML = `
+        <div class="banner">
+          <div class="date-line">${formattedDate}</div>
+          <div class="welcome-line">🗞️ माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां।</div>
+        </div>
+        <ul>${listItems}</ul>
+      `;
+
+      dataContainer.appendChild(groupDiv);
+    });
+
+    // 🎯 Double-click to open link
+    document.querySelectorAll(".headline").forEach(item => {
+      item.addEventListener("dblclick", e => {
+        e.stopPropagation();
+        const link = item.dataset.link;
+        if (link && link.startsWith("http")) {
+          window.open(link, "_blank");
+        } else {
+          alert("No valid link found!");
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+            }
             /*
             async function fetchSheet() {
   try {
