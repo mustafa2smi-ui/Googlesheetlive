@@ -473,7 +473,7 @@ function escapeHTML(str) {
 
 // ✅ 2. HTML Body में दूसरे डेटा के लिए यह ID होनी चाहिए
 const dataContainerId2 = "dataContainer2"; 
-
+/*
 // --- (B) नया फंक्शन: fetchSheet2 ---
 
 async function fetchSheet2() {
@@ -547,7 +547,76 @@ async function fetchSheet2() {
 
 // ✅ 4. नए function को call करें 
 fetchSheet2();
+*/
+  
+// --- (B) नया और सरल (Simple) फंक्शन: fetchSheet2 ---
 
+async function fetchSheet2() {
+    const container = document.getElementById(dataContainerId2);
+    
+    try {
+        const res = await fetch(sheetURL2);
+        const text = await res.text();
+        
+        // Safety check for HTML response (as discussed earlier)
+        if (text.trim().startsWith('<')) {
+            throw new Error("Received HTML instead of JSON. Check if Google Sheet URL is correct and published publicly.");
+        }
+
+        // Google Visualization API JSON parsing
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        // ✅ 1. No Data Condition
+        if (!rows || rows.length === 0) {
+            if (container) {
+                // 'No Data' Message
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #cc0000; border: 1px solid #f0ad4e; background-color: #fff9e6; border-radius: 5px; margin: 20px 0;">
+                        <h3>Naya Data jaldi hi Upload Kiya jayega</h3>
+                    </div>
+                `;
+            }
+            return; 
+        }
+
+        // ✅ 2. Simple Data Extraction and List Creation
+        let listHTML = '<ul>';
+        
+        // मान लीजिए कि डेटा कॉलम C[1] (Title) में है, जैसा आपके पुराने कोड में था
+        rows.forEach(r => {
+            const title = r.c[1]?.v || "शीर्षक उपलब्ध नहीं";
+            // यदि आप लिंक को भी चाहते हैं (कॉलम C[2]), तो आप इसे जोड़ सकते हैं:
+            // const link = r.c[2]?.v || "#"; 
+            
+            if (title.trim()) {
+                listHTML += `<li class="simple-list-item">${title}</li>`;
+            }
+        });
+
+        listHTML += '</ul>';
+
+        // ✅ 3. Display Data
+        if (container) {
+            container.innerHTML = `
+                <div class="sheet-2-header" style="font-weight: bold; margin-bottom: 10px;">Sheet 2: Taaza Khabar</div>
+                ${listHTML}
+            `;
+        }
+
+    } catch (err) {
+        console.error("Error fetching sheet 2:", err);
+        if(container) {
+            container.innerHTML = `<p style="color:red; text-align:center;">Failed to load Sheet 2 data: ${err.message}</p>`;
+        }
+    }
+}
+
+// --- (C) Function Call ---
+
+// पुराने fetchSheet() के साथ इसे Call करें
+fetchSheet2();
+            
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
   try {
