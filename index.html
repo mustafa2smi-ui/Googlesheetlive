@@ -547,7 +547,7 @@ async function fetchSheet2() {
 
 // ✅ 4. नए function को call करें 
 fetchSheet2();
-*/
+*//*
   
 // --- (B) नया और सरल (Simple) फंक्शन: fetchSheet2 ---
 
@@ -616,6 +616,81 @@ async function fetchSheet2() {
 
 // पुराने fetchSheet() के साथ इसे Call करें
 fetchSheet2();
+            */
+              // (B) नया और सरल (Simple) फंक्शन: fetchSheet2 ---
+
+async function fetchSheet2() {
+    const container = document.getElementById(dataContainerId2);
+    
+    try {
+        const res = await fetch(sheetURL2);
+        const text = await res.text();
+        
+        // Safety check for HTML response
+        if (text.trim().startsWith('<')) {
+            throw new Error("Received HTML instead of JSON. Check URL/Sharing.");
+        }
+
+        // Google Visualization API JSON parsing
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        let rows = json.table.rows;
+
+        // ✅ 1. हेडिंग (Row 0) को हटाएँ (Skip the Header Row)
+        // यदि rows मौजूद हैं, तो पहली पंक्ति को हटा दें
+        if (rows && rows.length > 0) {
+            rows = rows.slice(1); 
+        }
+        
+        // ✅ 2. No Data Condition: हेडिंग हटाने के बाद अगर कोई डेटा नहीं बचा है
+        // या अगर कोई डेटा है, लेकिन उसमें कोई वैलिड हेडलाइन (B कॉलम) नहीं है
+        let validHeadlines = [];
+        
+        if (rows && rows.length > 0) {
+            rows.forEach(r => {
+                const title = r.c[1]?.v; // B कॉलम (Index 1) से टाइटल लें
+                
+                // केवल तभी जोड़ें जब टाइटल मौजूद हो और खाली न हो
+                if (title && title.trim()) { 
+                    validHeadlines.push(title);
+                }
+            });
+        }
+        
+        // ✅ 3. Final Check: अगर कोई वैलिड हेडलाइन नहीं मिली, तो Custom Message दिखाओ
+        if (validHeadlines.length === 0) {
+            if (container) {
+                // आपका Custom 'No Data' Message
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #cc0000; border: 1px solid #f0ad4e; background-color: #fff9e6; border-radius: 5px; margin: 20px 0;">
+                        <h3>Naya Data jaldi hi Upload Kiya jayega</h3>
+                    </div>
+                `;
+            }
+            return; 
+        }
+
+        // ✅ 4. Display Data (Custom Message केवल तब दिखेगा जब validHeadlines.length === 0 हो)
+        let listHTML = '<ul>';
+        validHeadlines.forEach(title => {
+            listHTML += `<li class="simple-list-item">${title}</li>`;
+        });
+        listHTML += '</ul>';
+        
+        if (container) {
+            container.innerHTML = `
+                <div class="sheet-2-header" style="font-weight: bold; margin-bottom: 10px;">Sheet 2: Taaza Khabar</div>
+                ${listHTML}
+            `;
+        }
+
+    } catch (err) {
+        console.error("Error fetching sheet 2:", err);
+        if(container) {
+            container.innerHTML = `<p style="color:red; text-align:center;">Failed to load Sheet 2 data: ${err.message}</p>`;
+        }
+    }
+}
+
             /*
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
