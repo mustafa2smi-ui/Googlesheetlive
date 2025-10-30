@@ -509,8 +509,11 @@ footer a:hover {
 }
   */
  .micnews-header {
-  background: linear-gradient(135deg, #0a0a0a, #222);
-  color: #fff;
+ /* background: linear-gradient(135deg, #0a0a0a, #222);*/
+  
+  background: rgba(0, 0, 0, 0.7); /* 👈 Transparent black */
+  backdrop-filter: blur(6px); /* हल्का blur effect */
+   color: #fff;
   padding: 20px;
   text-align: center;
   border-radius: 16px;
