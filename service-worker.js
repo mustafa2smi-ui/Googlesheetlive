@@ -3,12 +3,13 @@ const CACHE_NAME = 'micnews-cache-v1';
 // ✅ वो फ़ाइलें जो पहली बार में कैश करनी हैं (ऑफ़लाइन चलाने के लिए ज़रूरी)
 const urlsToCache = [
   // मुख्य फ़ाइलें
+  '/',
   '/index.html',  // अपनी HTML फ़ाइल का नाम
   '/manifest.json',
 
   // इमेजेज और Icons (अगर आपने ये फ़ाइलें अपलोड की हैं)
   '/micnews123/favicon.png', 
-  '/micnews123/images/og-image.jpg', 
+  '/micc.jpg', 
   
   // Static Pages (अगर ये आपके प्रोजेक्ट के रूट में हैं)
   '/About.html',
