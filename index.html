@@ -437,8 +437,8 @@ footer a:hover {
     </div>
 
 <div id="dataContainer">Loading...</div>-->
-  
-<div id="dataContainer2">Loading Sheet 2...</div> 
+  <!--
+<div id="dataContainer2">Loading Sheet 2...</div> -->
 <!-- 📰 Old Grouped News Section -->
 <div id="dataContainer">Loading...</div>
   <button id="showMoreBtn" onclick="showMore()">Show More</button>
@@ -450,8 +450,8 @@ footer a:hover {
 <button id="shareBtn" title="Share Website" onclick="shareSite()">📤</button>
           <script>
             // ✅ 1. दूसरे Google Sheet का URL यहाँ परिभाषित करें
-const sheetURL2 = "https://docs.google.com/spreadsheets/d/1j818KfLPR0zEZ52QAHGVAxXDwmII_IX0jtD_-4UrSUQ/gviz/tq?tqx=out:json"; // **<-- यहाँ दूसरा URL बदलें**
-
+/* const sheetURL2 = "https://docs.google.com/spreadsheets/d/1j818KfLPR0zEZ52QAHGVAxXDwmII_IX0jtD_-4UrSUQ/gviz/tq?tqx=out:json"; // **<-- यहाँ दूसरा URL बदलें**
+*/
 let selectedGroup = null;
 let isPlaying = false;
 // Function for XSS Security (इसे fetchSheet से पहले जोड़ें)
@@ -469,85 +469,10 @@ function escapeHTML(str) {
 }
             // --- (A) नया URL और Container ID Variables ---
 
-
+/*
 
 // ✅ 2. HTML Body में दूसरे डेटा के लिए यह ID होनी चाहिए
 const dataContainerId2 = "dataContainer2"; 
-/*
-// --- (B) नया फंक्शन: fetchSheet2 ---
-
-async function fetchSheet2() {
-    try {
-        const res = await fetch(sheetURL2);
-        const text = await res.text();
-        
-        // Google Visualization API JSON parsing
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows;
-
-        // ✅ 3. No Data Condition लागू किया गया है
-        if (!rows || rows.length === 0) {
-            const container = document.getElementById(dataContainerId2);
-            if (container) {
-                // 'No Data' Message
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #cc0000; border: 1px solid #f0ad4e; background-color: #fff9e6; border-radius: 5px; margin: 20px 0;">
-                        <h3>Naya Data jaldi hi Upload Kiya jayega</h3>
-                    </div>
-                `;
-            }
-            return; // डेटा नहीं है तो यहीं रुक जाएँ
-        }
-
-        // डेटा है, तो उसे parse करें
-        const data = rows.map(r => ({
-            date: r.c[0]?.v || "",
-            title: r.c[1]?.v || "",
-            link: r.c[2]?.v || ""
-        }));
-
-        // Group by Date
-        const grouped = {};
-        data.forEach(item => {
-            if (!grouped[item.date]) grouped[item.date] = [];
-            grouped[item.date].push(item);
-        });
-
-        const container = document.getElementById(dataContainerId2);
-        container.innerHTML = ""; // Container को साफ़ करें
-
-        // डेटा को रेंडर करें (आप चाहें तो अपनी original date formatting/HTML logic यहाँ copy कर सकते हैं)
-        Object.keys(grouped).forEach(date => {
-            const groupDiv = document.createElement("div");
-            groupDiv.className = "group-sheet-2"; // CSS के लिए अलग class
-            
-            // Note: यहाँ मैंने सादगी के लिए simple rendering रखा है। 
-            // आप चाहें तो इसे अपने fetchSheet function के rendering logic से बदल सकते हैं।
-            groupDiv.innerHTML = `
-                <div class="banner">
-                    <div class="date-line">${date}</div>
-                    <div class="welcome-line">🗞️ दूसरा शीट डेटा</div>
-                </div>
-                <ul>${grouped[date].map(d => `<li class="headline">${d.title}</li>`).join("")}</ul>
-            `;
-            
-            container.appendChild(groupDiv);
-        });
-
-    } catch (err) {
-        console.error("Error fetching sheet 2:", err);
-        const container = document.getElementById(dataContainerId2);
-        if(container) {
-            container.innerHTML = `<p style="color:red; text-align:center;">Failed to load Sheet 2 data: ${err.message}</p>`;
-        }
-    }
-}
-
-// --- (C) Function Call ---
-
-// ✅ 4. नए function को call करें 
-fetchSheet2();
-*//*
   
 // --- (B) नया और सरल (Simple) फंक्शन: fetchSheet2 ---
 
@@ -617,80 +542,6 @@ async function fetchSheet2() {
 // पुराने fetchSheet() के साथ इसे Call करें
 fetchSheet2();
             */
-              // (B) नया और सरल (Simple) फंक्शन: fetchSheet2 ---
-
-async function fetchSheet2() {
-    const container = document.getElementById(dataContainerId2);
-    
-    try {
-        const res = await fetch(sheetURL2);
-        const text = await res.text();
-        
-        // Safety check for HTML response
-        if (text.trim().startsWith('<')) {
-            throw new Error("Received HTML instead of JSON. Check URL/Sharing.");
-        }
-
-        // Google Visualization API JSON parsing
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        let rows = json.table.rows;
-
-        // ✅ 1. हेडिंग (Row 0) को हटाएँ (Skip the Header Row)
-        // यदि rows मौजूद हैं, तो पहली पंक्ति को हटा दें
-        if (rows && rows.length > 0) {
-            rows = rows.slice(1); 
-        }
-        
-        // ✅ 2. No Data Condition: हेडिंग हटाने के बाद अगर कोई डेटा नहीं बचा है
-        // या अगर कोई डेटा है, लेकिन उसमें कोई वैलिड हेडलाइन (B कॉलम) नहीं है
-        let validHeadlines = [];
-        
-        if (rows && rows.length > 0) {
-            rows.forEach(r => {
-                const title = r.c[1]?.v; // B कॉलम (Index 1) से टाइटल लें
-                
-                // केवल तभी जोड़ें जब टाइटल मौजूद हो और खाली न हो
-                if (title && title.trim()) { 
-                    validHeadlines.push(title);
-                }
-            });
-        }
-        
-        // ✅ 3. Final Check: अगर कोई वैलिड हेडलाइन नहीं मिली, तो Custom Message दिखाओ
-        if (validHeadlines.length === 0) {
-            if (container) {
-                // आपका Custom 'No Data' Message
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #cc0000; border: 1px solid #f0ad4e; background-color: #fff9e6; border-radius: 5px; margin: 20px 0;">
-                        <h3>Naya Data jaldi hi Upload Kiya jayega</h3>
-                    </div>
-                `;
-            }
-            return; 
-        }
-
-        // ✅ 4. Display Data (Custom Message केवल तब दिखेगा जब validHeadlines.length === 0 हो)
-        let listHTML = '<ul>';
-        validHeadlines.forEach(title => {
-            listHTML += `<li class="simple-list-item">${title}</li>`;
-        });
-        listHTML += '</ul>';
-        
-        if (container) {
-            container.innerHTML = `
-                <div class="sheet-2-header" style="font-weight: bold; margin-bottom: 10px;">Sheet 2: Taaza Khabar</div>
-                ${listHTML}
-            `;
-        }
-
-    } catch (err) {
-        console.error("Error fetching sheet 2:", err);
-        if(container) {
-            container.innerHTML = `<p style="color:red; text-align:center;">Failed to load Sheet 2 data: ${err.message}</p>`;
-        }
-    }
-}
-
             /*
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
