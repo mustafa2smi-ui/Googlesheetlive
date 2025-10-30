@@ -395,6 +395,7 @@ footer a:hover {
     padding: 10px;
 }
   */
+  /*
 .micnews-header {
   background: linear-gradient(135deg, #0a0a0a, #222);
   color: #fff;
@@ -418,14 +419,14 @@ footer a:hover {
   margin-bottom: 10px;
 }
 
-/* ✅ Fixed typewriter effect (mobile friendly) */
+/* ✅ Fixed typewriter effect (mobile friendly) 
 .typewriter {
   display: inline-block;
   overflow: hidden;
   border-right: 2px solid #ffcc00;
   animation: typing 5s steps(80, end) forwards, blink 1s step-end infinite;
-  white-space: normal;  /* allow wrapping */
-  word-break: break-word; /* break long lines */
+  white-space: normal;  /* allow wrapping 
+  word-break: break-word; /* break long lines 
 }
 
 @keyframes typing {
@@ -434,6 +435,67 @@ footer a:hover {
 }
 @keyframes blink {
   50% { border-color: transparent }
+}
+
+@media (max-width:600px){
+  .micnews-header{
+    padding:15px;
+    font-size:14px;
+  }
+  .micnews-header h1{
+    font-size:1.1rem;
+  }
+}
+  */
+  .micnews-header {
+  background: linear-gradient(135deg, #0a0a0a, #222);
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  font-family: "Noto Sans Devanagari", "Poppins", sans-serif;
+  max-width: 800px;
+  margin: 20px auto;
+  overflow: hidden;
+}
+.micnews-header h1 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #ffcc00;
+  text-shadow: 1px 1px 3px #000;
+}
+.micnews-header p {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+
+/* ✅ Smooth, stable typewriter effect (no resize) */
+.typewriter {
+  position: relative;
+  display: inline-block;
+  white-space: normal;
+  word-break: break-word;
+  animation: fadeIn 0.8s ease-in-out;
+}
+.typewriter::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background-color: #ffcc00;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+@keyframes blink {
+  50% { opacity: 0 }
 }
 
 @media (max-width:600px){
