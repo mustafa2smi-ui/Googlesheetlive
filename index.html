@@ -451,7 +451,7 @@ footer a:hover {
           <script>
             // ✅ 1. दूसरे Google Sheet का URL यहाँ परिभाषित करें
 const sheetURL2 = "https://docs.google.com/spreadsheets/d/1j818KfLPR0zEZ52QAHGVAxXDwmII_IX0jtD_-4UrSUQ/gviz/tq?tqx=out:json"; // **<-- यहाँ दूसरा URL बदलें**
-const sheetURL = "https://docs.google.com/spreadsheets/d/1DtRlkaP23ihYmN8mn4Gx7deLicpVhDY6AiY-bN5pqt8/gviz/tq?tqx=out:json";
+
 let selectedGroup = null;
 let isPlaying = false;
 // Function for XSS Security (इसे fetchSheet से पहले जोड़ें)
@@ -616,7 +616,7 @@ async function fetchSheet2() {
 
 // पुराने fetchSheet() के साथ इसे Call करें
 fetchSheet2();
-            
+            /*
 // 🔹 Fetch Sheet Data
 async function fetchSheet() {
   try {
@@ -684,7 +684,7 @@ async function fetchSheet() {
     /*  const listItems = grouped[date].map(d =>
         `<li class="headline" data-link="${d.link}">${d.title}</li>`
       ).join("");
-      */
+      *//*
             const listItems = grouped[date].map(d =>
         // ✅ ध्यान दें: d.title और d.link दोनों को escapeHTML से गुज़ारें
         `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
@@ -706,7 +706,7 @@ async function fetchSheet() {
   month: 'long',
   year: 'numeric'
 });
-*/
+*//*
 groupDiv.innerHTML = `
   <div class="banner">
     <div class="date-line">${formattedDate}</div>
@@ -803,6 +803,186 @@ allGroups.forEach((g, i) => {
     console.error("Error fetching sheet:", err);
   }
 }
+            */
+            // ⚠️ महत्वपूर्ण बदलाव: अपने Google Apps Script Web App URL को यहाँ बदलें
+// यह वह URL है जो आपको डिप्लॉयमेंट के बाद मिला है (e.g., https://script.google.com/macros/s/AKfycb.../exec)
+const sheetURL = 'https://script.google.com/macros/s/AKfycbwG_DQd2FNypB3NtA8DmHDXRUsmAJ9LIEtBCkdhDcWcvWtybje40fN_fHPIhK8QVRktGA/exec'; 
+
+// Apps Script Web App से डेटा प्राप्त करने के लिए fetchSheet() को अपडेट करें
+// 🔹 Fetch Sheet Data
+async function fetchSheet() {
+  try {
+    // 💡 बदलाव #1: Web App URL से सीधा fetch करें
+    const res = await fetch(sheetURL);
+    
+    // Web App URL सीधा JSON रिस्पॉन्स देगा
+    if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    
+    // 💡 बदलाव #2: सीधे JSON parse करें, अतिरिक्त सबस्ट्रिंग/स्लाइसिंग की आवश्यकता नहीं है
+    const dataFromSheet = await res.json(); 
+    
+    // 💡 बदलाव #3: Web App से प्राप्त डेटा एक 2D array (rows) के रूप में होगा।
+    // आपकी स्क्रिप्ट के doGet फ़ंक्शन से प्राप्त 2D Array को मैप करें।
+    // Apps Script से डेटा को उसी तरह प्राप्त करें जैसे आपने उसे लौटाया है।
+    
+    // हम मान रहे हैं कि आपका Apps Script doGet() function एक 2D array लौटाता है:
+    // [['date1', 'title1', 'link1'], ['date2', 'title2', 'link2'], ...]
+    
+    // पहले row को स्कीप करें अगर वह हैडर है
+    const rows = dataFromSheet.slice(1); // अगर पहली row हैडर है, तो इसे हटा दें
+
+    const data = rows.map(r => ({
+      date: r[0] || "",
+      title: r[1] || "",
+      link: r[2] || ""
+    }));
+
+    // Group by Date
+    const grouped = {};
+    data.forEach(item => {
+      if (!grouped[item.date]) grouped[item.date] = [];
+      grouped[item.date].push(item);
+    });
+
+    const container = document.getElementById("dataContainer");
+    container.innerHTML = "";
+
+    Object.keys(grouped).forEach(date => {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "group";
+
+      // ✅ तारीख पहचानने की कोशिश करें (सभी फॉर्मेट के लिए)
+      let formattedDate = "";
+      try {
+        let dateObj;
+        // Apps Script अब date को सीधा string के रूप में भेजता है (जैसे: '2025-04-10T00:00:00.000Z')
+        // या सीधे 'YYYY-MM-DD' फॉर्मेट में, जो आपकी Apps Script के कॉन्फ़िगरेशन पर निर्भर करता है।
+        dateObj = new Date(date);
+        
+        // पुराने Google Sheets सीरियल नंबर या Date() फॉर्मेट की जाँच अब आवश्यक नहीं है
+        
+        if (dateObj && !isNaN(dateObj) && date !== "") {
+          formattedDate = dateObj.toLocaleDateString("hi-IN", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          });
+        } else {
+          formattedDate = date; // fallback text
+        }
+      } catch (e) {
+        formattedDate = date;
+      }
+      
+      // सुनिश्चित करें कि escapeHTML फ़ंक्शन आपके कोड में कहीं परिभाषित है
+      const escapeHTML = (str) => String(str).replace(/[&<>"']/g, (s) => 
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s]
+      );
+
+      const listItems = grouped[date].map(d =>
+        // ✅ ध्यान दें: d.title और d.link दोनों को escapeHTML से गुज़ारें
+        `<li class="headline" data-link="${escapeHTML(d.link)}">${escapeHTML(d.title)}</li>`
+      ).join("");
+      groupDiv.innerHTML = `
+  <div class="banner">
+    <div class="date-line">${formattedDate}</div>
+    <div class="welcome-line">🗞️ माईकन्यूज़123 में आपका स्वागत है। आज की ताज़ा सुर्खियां।</div>
+  </div>
+  <ul>${listItems}</ul>
+`;
+      // Select logic
+      groupDiv.addEventListener("click", () => {
+        document.querySelectorAll(".group").forEach(g => g.classList.remove("selected"));
+        groupDiv.classList.add("selected");
+        selectedGroup = groupDiv;
+      });
+
+      container.appendChild(groupDiv);
+    });
+// After appending all groups
+const allGroups = container.querySelectorAll(".group");
+allGroups.forEach((g, i) => {
+  if (i >= 4) g.classList.add("hidden");
+});
+    // Double-click to open link
+    document.querySelectorAll(".headline").forEach(item => {
+      item.addEventListener("dblclick", e => {
+        e.stopPropagation();
+        const link = item.dataset.link;
+        if (link && link.startsWith("http")) {
+          window.open(link, "_blank");
+        } else {
+          alert("No valid link found for this headline!");
+        }
+      });
+    });
+    // ... fetchSheet() function के अंदर, UI रेंडरिंग के बाद ...
+
+    // --- Schema Markup Implementation (JSON-LD) ---
+    
+    // 1. NewsArticle Schema (प्रत्येक ग्रुप के लिए एक लेख)
+    const allGroupsData = Object.keys(grouped).map(date => {
+      const groupData = grouped[date];
+      const firstHeadline = groupData[0]?.title || "माईकन्यूज़123 ताज़ा खबर";
+      
+      // Date Formatting (Schema के लिए ISO फॉर्मेट YYYY-MM-DD चाहिए)
+      let isoDate = "";
+      try {
+          const dateObj = new Date(date);
+          if (!isNaN(dateObj)) {
+              isoDate = dateObj.toISOString().split('T')[0];
+          }
+      } catch (e) {}
+
+      return {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        "headline": firstHeadline, // ग्रुप की पहली हेडलाइन को मुख्य हेडलाइन बनाएं
+        "datePublished": isoDate || new Date().toISOString(),
+        "dateModified": new Date().toISOString(),
+        "image": {
+          "@type": "ImageObject",
+          "url": "https://raw.githubusercontent.com/mustafa2smi-ui/Googlesheetlive/main/newsmicc.jpg" // अपनी OG Image URL यहाँ डालें
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "MicNews123"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "MicNews123",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://raw.githubusercontent.com/mustafa2smi-ui/Googlesheetlive/main/newsmicc.jpg" // अपनी favicon URL यहाँ डालें
+          }
+        },
+        "description": groupData.map(d => d.title).join(" | ") // सभी हेडलाइंस को डिस्क्रिप्शन में जोड़ें
+      };
+    });
+
+    // 2. Add JSON-LD script to the head
+    const oldScript = document.getElementById('newsSchema');
+    if (oldScript) oldScript.remove(); // पुराने स्कीमा को हटा दें
+
+    const schemaScript = document.createElement('script');
+    schemaScript.setAttribute('type', 'application/ld+json');
+    schemaScript.setAttribute('id', 'newsSchema');
+    // Schema Markup को एक array के रूप में जोड़ें
+    schemaScript.textContent = JSON.stringify(allGroupsData, null, 2); 
+    
+    document.head.appendChild(schemaScript);
+
+    // ... fetchSheet() function का अंत
+    
+            
+  } catch (err) {
+    console.error("Error fetching sheet:", err);
+  }
+}
+            
 /*
             async function fetchSheet() {
             */
