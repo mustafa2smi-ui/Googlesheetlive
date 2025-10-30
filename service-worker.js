@@ -9,7 +9,7 @@ const urlsToCache = [
 
   // इमेजेज और Icons (अगर आपने ये फ़ाइलें अपलोड की हैं)
   '/micnews123/favicon.png', 
-  '/micc.jpg', 
+  '/newsmicc.jpg', 
   
   // Static Pages (अगर ये आपके प्रोजेक्ट के रूट में हैं)
   '/About.html',
