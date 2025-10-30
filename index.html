@@ -1443,7 +1443,7 @@ function escapeHTML(str) {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // 🔴 सुनिश्चित करें कि पाथ सही हो (e.g., /micnews123/service-worker.js)
-    navigator.serviceWorker.register('/micnews123/service-worker.js')
+    navigator.serviceWorker.register('/service-worker.js')
       .then(reg => {
         console.log('Service Worker Registered successfully: ', reg.scope);
       })
